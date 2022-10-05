@@ -1,0 +1,17 @@
+.sw-page.is--framed{
+  .sw-page__top-bar-actions {
+    display: none;
+  }
+  .sw-page__back-btn-container {
+    display: none;
+  }
+  .sw-card-view__content > .sw-tabs {
+    display: none;
+  }
+  .smart-bar__header {
+    display: none;
+  }
+  .sw-page__search-bar {
+    display:none;
+  }
+}
