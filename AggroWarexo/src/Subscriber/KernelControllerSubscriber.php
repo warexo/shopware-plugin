@@ -26,7 +26,7 @@ class KernelControllerSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
         $token = $request->get('warexoToken');
         if ($token) {
-            $warexoToken = base64_decode($request->get('warexoToken'));
+            $warexoToken = json_decode(base64_decode($request->get('warexoToken')));
             if ($warexoToken) {
                 $event->getRequest()->attributes->set('warexoToken', $warexoToken);
             }
@@ -39,12 +39,17 @@ class KernelControllerSubscriber implements EventSubscriberInterface
         $warexoToken = $request->attributes->get('warexoToken');
         if ($warexoToken) {
             $response = $event->getResponse();
+            $response->headers->remove('X-Frame-Options');
             $response->headers->setCookie(Cookie::create('bearerAuth')
-                ->withValue($warexoToken)
+                ->withValue(json_encode([
+                    'access' => $warexoToken->access_token,
+                    'expiry' => $warexoToken->expires_in,
+                    'refresh' => $warexoToken->refresh_token,
+                ]))
                 ->withPath('/admin')
-                ->withSameSite('Strict')
+                ->withSameSite('None')
                 ->withHttpOnly(false)
-                ->withSecure(false));
+                ->withSecure(true));
         }
 
     }
