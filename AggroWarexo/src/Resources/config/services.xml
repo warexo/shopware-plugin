@@ -8,6 +8,12 @@
         <service id="Warexo\Service\ProductVariationBuilderDecorator" decorates="Shopware\Core\Content\Product\ProductVariationBuilder">
             <argument type="service" id="Warexo\Service\ProductVariationBuilderDecorator.inner" />
         </service>
+        <service id="Warexo\Service\NavigationPageLoaderDecorator" decorates="Shopware\Storefront\Page\Navigation\NavigationPageLoader">
+            <argument type="service" id="Warexo\Service\NavigationPageLoaderDecorator.inner" />
+            <argument type="service" id="Shopware\Core\Content\Category\SalesChannel\CategoryRoute"/>
+            <argument type="service" id="Shopware\Core\Content\Seo\SeoResolver"/>
+            <argument type="service" id="sales_channel_domain.repository"/>
+        </service>
         <service id="Warexo\Service\CategorySortUpdater" decorates="Shopware\Core\Framework\DataAbstractionLayer\Indexing\TreeUpdater" >
             <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
@@ -15,6 +21,9 @@
         </service>
         <service id="Warexo\Subscriber\KernelControllerSubscriber">
             <tag name="kernel.event_subscriber" priority="0"/>
+        </service>
+        <service id="Warexo\Subscriber\ProductPageLoadedSubscriber">
+            <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Extension\Content\Category\CategoryExtension">
             <tag name="shopware.entity.extension" />

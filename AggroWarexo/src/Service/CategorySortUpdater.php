@@ -39,7 +39,7 @@ class CategorySortUpdater extends TreeUpdater
 
         $updateIds = Uuid::fromHexToBytesList(array_unique($updateIds));
 
-        if (empty($updateIds)) {
+        if (empty($updateIds) || $entity !== 'category') {
             return;
         }
 
