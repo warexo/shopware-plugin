@@ -1,0 +1,15 @@
+{% sw_extends '@Storefront/storefront/page/checkout/checkout-aside-item.html.twig' %}
+
+{% block page_checkout_aside_item_variant_characteristics %}
+
+    {{ parent() }}
+
+    {% if lineItem.payload.warexoProductOptionSelections %}
+        {% for selection in lineItem.payload.warexoProductOptionSelections %}
+            <div class="checkout-aside-item-product-option-selections">
+                {{ selection.option }}: {{ selection.value }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

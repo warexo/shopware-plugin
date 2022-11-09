@@ -1,0 +1,56 @@
+{% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
+
+{% block buy_widget_buy_container %}
+    {% if product.extensions.warexoProductOptions|length > 0 %}
+        <div class="product-detail-product-options">
+            {% for option in product.extensions.warexoProductOptions %}
+                <div class="product-detail-product-option">
+                    <label class="product-detail-product-option-name">
+                        {{ option.name }}
+                    </label>
+                    <div class="product-detail-product-option-values">
+                        {% if option.displayType == 'color' %}
+                            {% for value in option.productOptionValues %}
+                                <div class="product-detail-product-option-value-group is-display-color">
+                                    <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
+                                    <label class="product-detail-product-option-label" title="{{ value.name }}" for="selection-{{ option.id }}-{{ value.id }}" style="background-color: {{ value.colorHexCode }};">
+                                        {% if value.media %}
+                                            {% sw_thumbnails 'product-option-img-thumbnails' with {
+                                                media: value.media,
+                                                sizes: {
+                                                    'default': '52px'
+                                                },
+                                                attributes: {
+                                                    'class': 'product-detail-product-option-image',
+                                                    'alt': option.name,
+                                                    'title': option.name
+                                                }
+                                            } %}
+                                        {% endif %}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                        <select name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" class="custom-select product-detail-product-option-value-input">
+                            {% for value in option.productOptionValues %}
+                                <option value="{{ value.id }}">
+                                    {{ value.name }}
+                                    {% if value.surcharge %}
+                                        {% if value.surcharge.surchargeType == 'abs' %}
+                                            (+ {{ value.surcharge.price|currency }}
+                                        {% else %}
+                                            (+ {{ value.surcharge.price }}%)
+                                        {% endif %}
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

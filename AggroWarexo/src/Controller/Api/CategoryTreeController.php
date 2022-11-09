@@ -24,7 +24,7 @@ class CategoryTreeController extends AbstractController
     }
 
     /**
-     * @Route("/api/_action/warexo-category-list", name="api.action.warexo.category-tree", methods={"GET"})
+     * @Route("/api/_action/warexo-category-list", name="api.action.warexo.category.list", methods={"GET"})
      */
     public function getCategoryListAction(Request $request, Context $context): JsonResponse
     {

@@ -5,6 +5,20 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+
+        <!-- generic services -->
+        <service id="Warexo\Service\CategoryTreeLoader">
+            <argument type="service" id="category.repository"/>
+            <argument type="service" id="event_dispatcher"/>
+        </service>
+        <service id="Warexo\Controller\Api\CategoryTreeController" public="true">
+            <argument type="service" id="Warexo\Service\CategoryTreeLoader"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
+
+        <!-- service extensions -->
         <service id="Warexo\Service\ProductVariationBuilderDecorator" decorates="Shopware\Core\Content\Product\ProductVariationBuilder">
             <argument type="service" id="Warexo\Service\ProductVariationBuilderDecorator.inner" />
         </service>
@@ -19,27 +33,58 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="Warexo\Service\CategorySortUpdater.inner" />
         </service>
+
+        <!-- event listeners -->
         <service id="Warexo\Subscriber\KernelControllerSubscriber">
             <tag name="kernel.event_subscriber" priority="0"/>
         </service>
-        <service id="Warexo\Subscriber\ProductPageLoadedSubscriber">
+        <service id="Warexo\Subscriber\ProductPageCriteriaSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="Warexo\Subscriber\BeforeLineItemAddedSubscriber">
+            <argument type="service" id="request_stack"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <!-- entity extensions -->
         <service id="Warexo\Extension\Content\Category\CategoryExtension">
             <tag name="shopware.entity.extension" />
         </service>
+        <service id="Warexo\Extension\Content\Product\ProductExtension">
+            <tag name="shopware.entity.extension" />
+        </service>
+
+        <!-- entity definitions -->
         <service id="Warexo\Extension\Content\Category\CategoryExtensionDefinition">
             <tag name="shopware.entity.definition" entity="warexo_category_extension" />
         </service>
-        <service id="Warexo\Service\CategoryTreeLoader">
-            <argument type="service" id="category.repository"/>
-            <argument type="service" id="event_dispatcher"/>
+        <service id="Warexo\Core\Content\ProductOption\WarexoProductOptionDefinition">
+            <tag name="shopware.entity.definition" entity="warexo_product_option" />
         </service>
-        <service id="Warexo\Controller\Api\CategoryTreeController" public="true">
-            <argument type="service" id="Warexo\Service\CategoryTreeLoader"/>
-            <call method="setContainer">
-                <argument type="service" id="service_container"/>
-            </call>
+        <service id="Warexo\Core\Content\ProductOption\Aggregate\ProductOptionTranslation\WarexoProductOptionTranslationDefinition">
+            <tag name="shopware.entity.definition" entity="warexo_product_option_translation" />
         </service>
+        <service id="Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue\WarexoProductOptionValueDefinition">
+            <tag name="shopware.entity.definition" entity="warexo_product_option_value" />
+        </service>
+        <service id="Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValueTranslation\WarexoProductOptionValueTranslationDefinition">
+            <tag name="shopware.entity.definition" entity="warexo_product_option_value_translation" />
+        </service>
+        <service id="Warexo\Core\Content\ProductOption\Aggregate\ProductProductOption\WarexoProductProductOptionDefinition">
+            <tag name="shopware.entity.definition" entity="warexo_product_to_product_option" />
+        </service>
+
+        <!-- cart processor / collector -->
+        <service id="Warexo\Core\Checkout\Cart\ProductOptionCartCollector">
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="warexo_product_option.repository"/>
+            <argument type="service" id="warexo_product_option_value.repository"/>
+            <tag name="shopware.cart.collector" />
+        </service>
+        <service id="Warexo\Core\Checkout\Cart\ProductOptionCartProcessor">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+            <tag name="shopware.cart.processor" />
+        </service>
+
     </services>
 </container>

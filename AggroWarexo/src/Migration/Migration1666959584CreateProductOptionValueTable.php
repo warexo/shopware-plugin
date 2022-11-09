@@ -17,9 +17,9 @@ class Migration1666959584CreateProductOptionValueTable extends MigrationStep
         $sql = <<<SQL
         CREATE TABLE IF NOT EXISTS `warexo_product_option_value` (
             `id` BINARY(16) NOT NULL,
-            `product_option_id` BINARY(16) NOT NULL,
-            `media_id` BINARY(16) NOT NULL,
-            `display_type` VARCHAR(50) NULL,
+            `warexo_product_option_id` BINARY(16) NOT NULL,
+            `media_id` BINARY(16) NULL,
+            `position` int(10) NOT NULL,
             `surcharge` json NULL,
             `created_at` DATETIME(3) NOT NULL,
             `updated_at` DATETIME(3) NULL,
@@ -29,8 +29,8 @@ class Migration1666959584CreateProductOptionValueTable extends MigrationStep
         $connection->executeStatement($sql);
         $sql = <<<'SQL'
         ALTER TABLE `warexo_product_option_value`
-            ADD CONSTRAINT `fk.warexo_product_option.product_option_id`
-                    FOREIGN KEY (`product_option_id`)
+            ADD CONSTRAINT `fk.warexo_product_option.warexo_product_option_id`
+                    FOREIGN KEY (`warexo_product_option_id`)
                     REFERENCES `warexo_product_option` (`id`)
                     ON DELETE CASCADE
                     ON UPDATE CASCADE;
