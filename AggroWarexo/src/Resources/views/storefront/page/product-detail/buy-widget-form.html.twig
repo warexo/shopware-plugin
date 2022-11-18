@@ -1,6 +1,6 @@
-{% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
+{% sw_extends '@Storefront/storefront/page/product-detail/buy-widget-form.html.twig' %}
 
-{% block buy_widget_buy_container %}
+{% block page_product_detail_buy_container %}
     {% if product.extensions.warexoProductOptions|length > 0 %}
         <div class="product-detail-product-options">
             {% for option in product.extensions.warexoProductOptions %}
@@ -32,24 +32,9 @@
                             {% endfor %}
                         {% elseif option.displayType == 'text' %}
                             {% for value in option.productOptionValues %}
-                                <div class="product-detail-product-option-value-group is-display-text">
-                                    <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
-                                    <label class="product-detail-product-option-label" title="{{ value.name }}" for="selection-{{ option.id }}-{{ value.id }}" style="background-color: {{ value.colorHexCode }};">
-                                        {{ value.name }}
-                                        {% if value.surcharge %}
-                                            {% if value.surcharge.surchargeType == 'abs' %}
-                                                (+ {{ value.surcharge.price|currency }}
-                                            {% else %}
-                                                (+ {{ value.surcharge.price }}%)
-                                            {% endif %}
-                                        {% endif %}
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                        <select name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" class="custom-select product-detail-product-option-value-input">
-                            {% for value in option.productOptionValues %}
-                                <option value="{{ value.id }}">
+                            <div class="product-detail-product-option-value-group is-display-text">
+                                <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
+                                <label class="product-detail-product-option-label" title="{{ value.name }}" for="selection-{{ option.id }}-{{ value.id }}" style="background-color: {{ value.colorHexCode }};">
                                     {{ value.name }}
                                     {% if value.surcharge %}
                                         {% if value.surcharge.surchargeType == 'abs' %}
@@ -58,9 +43,24 @@
                                             (+ {{ value.surcharge.price }}%)
                                         {% endif %}
                                     {% endif %}
-                                </option>
+                                </label>
+                            </div>
                             {% endfor %}
-                        </select>
+                        {% else %}
+                            <select name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" class="custom-select product-detail-product-option-value-input">
+                                {% for value in option.productOptionValues %}
+                                    <option value="{{ value.id }}">
+                                        {{ value.name }}
+                                        {% if value.surcharge %}
+                                            {% if value.surcharge.surchargeType == 'abs' %}
+                                                (+ {{ value.surcharge.price|currency }}
+                                            {% else %}
+                                                (+ {{ value.surcharge.price }}%)
+                                            {% endif %}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
                         {% endif %}
                     </div>
                 </div>

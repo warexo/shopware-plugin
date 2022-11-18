@@ -45,6 +45,12 @@
             <argument type="service" id="request_stack"/>
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="Warexo\Subscriber\ProductPageLoadedSubscriber">
+            <argument type="service" id="Shopware\Core\Content\Seo\SeoResolver"/>
+            <argument type="service" id="sales_channel_domain.repository"/>
+            <argument type="service" id="product.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
 
         <!-- entity extensions -->
         <service id="Warexo\Extension\Content\Category\CategoryExtension">

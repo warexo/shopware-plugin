@@ -14,6 +14,7 @@ class WarexoProductOptionEntity extends Entity
     protected ?string $ident;
     protected ProductOptionValueCollection $productOptionValues;
     protected ProductCollection $products;
+    protected ?array $productIds;
 
     public function getDisplayType(): ?string
     {
@@ -75,6 +76,22 @@ class WarexoProductOptionEntity extends Entity
     public function setProducts(ProductCollection $products): void
     {
         $this->products = $products;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getProductIds(): ?array
+    {
+        return $this->productIds;
+    }
+
+    /**
+     * @param array|null $productIds
+     */
+    public function setProductIds(?array $productIds): void
+    {
+        $this->productIds = $productIds;
     }
 
 }

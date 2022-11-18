@@ -5,7 +5,11 @@ namespace Warexo\Core\Content\ProductOption;
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ApiAware;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\CascadeDelete;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Inherited;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ReverseInherited;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyAssociationField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyIdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToManyAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 
@@ -51,13 +55,13 @@ class WarexoProductOptionDefinition extends EntityDefinition
                 WarexoProductOptionTranslationDefinition::class,
                 'warexo_product_option_id'
             ))->addFlags(new ApiAware(), new Required()),
-            new ManyToManyAssociationField(
+            (new ManyToManyAssociationField(
                 'products',
                 ProductDefinition::class,
                 WarexoProductProductOptionDefinition::class,
                 'warexo_product_option_id',
                 'product_id'
-            ),
+            ))->addFlags(new CascadeDelete(), new ReverseInherited('warexoProductOptions')),
         ]);
     }
 }

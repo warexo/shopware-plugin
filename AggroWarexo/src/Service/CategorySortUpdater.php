@@ -112,11 +112,17 @@ class CategorySortUpdater extends TreeUpdater
         $firstChild = current(array_filter($children, function($child) {
             return $child['after_category_id'] === null;
         }));
-        $sortedChildren = [$firstChild['id']];
+        if ($firstChild) {
+            $sortedChildren = [$firstChild['id']];
 
-        while($nextChild = $this->findNextChild($children, $firstChild['id'])) {
-            $sortedChildren[] = $nextChild['id'];
-            $firstChild = $nextChild;
+            while($nextChild = $this->findNextChild($children, $firstChild['id'])) {
+                $sortedChildren[] = $nextChild['id'];
+                $firstChild = $nextChild;
+            }
+        }else{
+            $sortedChildren = array_map(function($child) {
+                return $child['id'];
+            }, $children);
         }
 
         return $sortedChildren;

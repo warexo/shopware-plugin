@@ -1,0 +1,9 @@
+{% sw_extends '@Storefront/storefront/page/product-detail/meta.html.twig' %}
+
+{% block layout_head_canonical %}
+    {% if page.metaInformation.canonical %}
+        <link rel="canonical" href="{{ page.metaInformation.canonical }}" />
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

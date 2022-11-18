@@ -25,13 +25,16 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
     public function onBeforeLineItemAdded(BeforeLineItemAddedEvent $event)
     {
         $lineItem = $event->getLineItem();
-        foreach ($this->requestStack->getCurrentRequest()->get('lineItems') as $key => $item) {
-            if ($lineItem->getId() == $key && isset($item['warexoProductOptions'])) {
-                $cart = $event->getCart();
-                $cart->remove($lineItem->getId());
-                $lineItem->setId(md5( $lineItem->getId(). implode('|', array_values($item['warexoProductOptions']))));
-                $lineItem->setPayloadValue('warexoProductOptions', $item['warexoProductOptions']);
-                $cart->add($lineItem);
+        $lineItems = $this->requestStack->getCurrentRequest()->get('lineItems');
+        if($lineItems) {
+            foreach ($this->requestStack->getCurrentRequest()->get('lineItems') as $key => $item) {
+                if ($lineItem->getId() == $key && isset($item['warexoProductOptions'])) {
+                    $cart = $event->getCart();
+                    $cart->remove($lineItem->getId());
+                    $lineItem->setId(md5( $lineItem->getId(). implode('|', array_values($item['warexoProductOptions']))));
+                    $lineItem->setPayloadValue('warexoProductOptions', $item['warexoProductOptions']);
+                    $cart->add($lineItem);
+                }
             }
         }
     }

@@ -44,6 +44,7 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
 
     public function load(Request $request, SalesChannelContext $context): NavigationPage
     {
+
         $page = $this->decoratedService->load($request, $context);
         $navigationId = $request->get('navigationId', $context->getSalesChannel()->getNavigationCategoryId());
 
@@ -53,10 +54,10 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
 
         if ($page->getMetaInformation()) {
             $customFields = $category->getCustomFields();
-            if (isset($customFields['custom_canonical_category']) && $customFields['custom_canonical_category']) {
-                $salesChannelId = isset($customFields['custom_canonical_saleschannel']) && $customFields['custom_canonical_saleschannel'] ? $customFields['custom_canonical_saleschannel'] : $context->getSalesChannel()->getId();
-                $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/navigation/'.$customFields['custom_canonical_category']);
-                if ($seoUrl && $seoUrl['canonicalPathInfo']) {
+            if (isset($customFields['custom_warexo_canonical_category']) && $customFields['custom_warexo_canonical_category']) {
+                $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSalesChannel()->getId();
+                $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/navigation/'.$customFields['custom_warexo_canonical_category']);
+                if ($seoUrl && isset($seoUrl['canonicalPathInfo'])) {
                     $domain = $this->findSalesChannelUrl($salesChannelId, $context->getContext());
                     if ($domain) {
                         $page->getMetaInformation()->setCanonical($domain.$seoUrl['canonicalPathInfo']);
@@ -64,6 +65,7 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
                 }
             }
         }
+
         return $page;
     }
 
