@@ -1,0 +1,15 @@
+{% sw_extends '@Storefront/storefront/page/product-detail/meta.html.twig' %}
+
+{% block layout_head_canonical %}
+    {% if page.metaInformation.canonical %}
+        <link rel="canonical" href="{{ page.metaInformation.canonical }}" />
+    {% else %}
+        {% if page.product.parentId %}
+            {% set canonicalUrl = page.product.parentId %}
+        {% elseif page.product.canonicalProductId %}
+            {% set canonicalUrl = page.product.canonicalProductId %}
+        {% endif %}
+
+        <link rel="canonical" href="{{ seoUrl('frontend.detail.page', { productId: canonicalUrl }) }}" />
+    {% endif %}
+{% endblock %}
