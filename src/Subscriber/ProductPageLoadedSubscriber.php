@@ -5,7 +5,9 @@ namespace Warexo\Subscriber;
 use Shopware\Core\Content\Seo\AbstractSeoResolver;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Shopware\Storefront\Page\Product\ProductPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -45,9 +47,10 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
             if (isset($customFields['custom_warexo_canonical_category']) && $customFields['custom_warexo_canonical_category']) {
                 $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSource()->getId();
                 if ($salesChannelId) {
-                    $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/detail/'.$product->getId());
+                    $productId = $product->getParentId() ?: $product->getId();
+                    $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/detail/'.$productId);
                     if ($seoUrl && isset($seoUrl['canonicalPathInfo'])) {
-                        $domain = $this->findSalesChannelUrl($salesChannelId, $context);
+                        $domain = $this->findSalesChannelDomainUrl($salesChannelId, $context, $event->getRequest()->isSecure());
                         if ($domain) {
                             $page->getMetaInformation()->setCanonical($domain.$seoUrl['canonicalPathInfo']);
                         }
@@ -57,19 +60,22 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
             }
         }
 
-        if ($product->getParentId()) {
-            $criteria = new Criteria([$product->getParentId()]);
-            $criteria->addAssociation('media');
-            $parent = $this->productRepository->search($criteria, $context)->first();
-            $product->getMedia()->merge($parent->getMedia());
-        }
     }
 
-    private function findSalesChannelUrl(string $salesChannelId, $context)
+    private function findSalesChannelDomainUrl(string $salesChannelId, $context, $secure): ?string
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('salesChannelId', $salesChannelId));
-        $salesChannelDomain = $this->salesChannelDomainRepository->search($criteria, $context)->first();
-        return $salesChannelDomain ? $salesChannelDomain->getUrl() : null;
+        $criteria->addFilter(new EqualsFilter('languageId', $context->getLanguageId()));
+        $criteria->addFilter(new EqualsFilter('currencyId', $context->getCurrencyId()));
+        $criteria->addFilter(new PrefixFilter('url', $secure ? 'https://' : 'http://'));
+
+        $result = $this->salesChannelDomainRepository->search($criteria, $context);
+
+        if ($result->getTotal() === 0) {
+            return null;
+        }
+
+        return $result->first()->getUrl();
     }
 }

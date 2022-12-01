@@ -2,6 +2,7 @@
 
 namespace Warexo\Service;
 
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Shopware\Storefront\Page\Navigation\NavigationPageLoaderInterface;
 use Shopware\Storefront\Page\Navigation\NavigationPage;
 use Symfony\Component\HttpFoundation\Request;
@@ -58,7 +59,7 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
                 $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSalesChannel()->getId();
                 $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/navigation/'.$customFields['custom_warexo_canonical_category']);
                 if ($seoUrl && isset($seoUrl['canonicalPathInfo'])) {
-                    $domain = $this->findSalesChannelUrl($salesChannelId, $context->getContext());
+                    $domain = $this->findSalesChannelDomainUrl($salesChannelId, $context->getContext(), $request->isSecure());
                     if ($domain) {
                         $page->getMetaInformation()->setCanonical($domain.$seoUrl['canonicalPathInfo']);
                     }
@@ -69,11 +70,20 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
         return $page;
     }
 
-    private function findSalesChannelUrl(string $salesChannelId, $context)
+    private function findSalesChannelDomainUrl(string $salesChannelId, $context, $secure): ?string
     {
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('salesChannelId', $salesChannelId));
-        $salesChannelDomain = $this->salesChannelDomainRepository->search($criteria, $context)->first();
-        return $salesChannelDomain ? $salesChannelDomain->getUrl() : null;
+        $criteria->addFilter(new EqualsFilter('languageId', $context->getLanguageId()));
+        $criteria->addFilter(new EqualsFilter('currencyId', $context->getCurrencyId()));
+        $criteria->addFilter(new PrefixFilter('url', $secure ? 'https://' : 'http://'));
+
+        $result = $this->salesChannelDomainRepository->search($criteria, $context);
+
+        if ($result->getTotal() === 0) {
+            return null;
+        }
+
+        return $result->first()->getUrl();
     }
 }
