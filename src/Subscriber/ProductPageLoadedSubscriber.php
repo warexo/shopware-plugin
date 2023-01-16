@@ -44,7 +44,7 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
 
         if ($category) {
             $customFields = $category->getCustomFields();
-            if (isset($customFields['custom_warexo_canonical_category']) && $customFields['custom_warexo_canonical_category']) {
+            if ( $this->isCanonicalProduct($customFields) ) {
                 $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSource()->getId();
                 if ($salesChannelId) {
                     $productId = $product->getParentId() ?: $product->getId();
@@ -77,5 +77,21 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
         }
 
         return $result->first()->getUrl();
+    }
+
+    /**
+     * @param array|null $customFields
+     * @return bool
+     */
+    private function isCanonicalProduct(?array $customFields): bool
+    {
+        return
+            isset($customFields['custom_warexo_canonical_category']) &&
+            $customFields['custom_warexo_canonical_category'] &&
+            (
+                !isset($customFields['custom_warexo_canonical_mode']) ||
+                $customFields['custom_warexo_canonical_mode'] === 'product' ||
+                $customFields['custom_warexo_canonical_mode'] === ''
+            );
     }
 }

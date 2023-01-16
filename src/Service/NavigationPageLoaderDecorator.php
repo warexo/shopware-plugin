@@ -55,7 +55,7 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
 
         if ($page->getMetaInformation()) {
             $customFields = $category->getCustomFields();
-            if (isset($customFields['custom_warexo_canonical_category']) && $customFields['custom_warexo_canonical_category']) {
+            if ( $this->isCanonicalCategory($customFields) ) {
                 $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSalesChannel()->getId();
                 $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/navigation/'.$customFields['custom_warexo_canonical_category']);
                 if ($seoUrl && isset($seoUrl['canonicalPathInfo'])) {
@@ -85,5 +85,21 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
         }
 
         return $result->first()->getUrl();
+    }
+
+    /**
+     * @param array|null $customFields
+     * @return bool
+     */
+    private function isCanonicalCategory(?array $customFields): bool
+    {
+        return
+            isset($customFields['custom_warexo_canonical_category']) &&
+            $customFields['custom_warexo_canonical_category'] &&
+            (
+                !isset($customFields['custom_warexo_canonical_mode']) ||
+                $customFields['custom_warexo_canonical_mode'] === 'category' ||
+                $customFields['custom_warexo_canonical_mode'] === ''
+            );
     }
 }
