@@ -2,11 +2,15 @@
 
 namespace Warexo\Subscriber;
 
+use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
+use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\AbstractSeoResolver;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Shopware\Storefront\Page\Product\ProductPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -37,6 +41,12 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
 
     public function onProductPageLoaded(ProductPageLoadedEvent $event)
     {
+        $this->handleCanonicalSettings($event);
+        $this->addDownloadableMedia($event);
+    }
+
+    private function handleCanonicalSettings(ProductPageLoadedEvent $event)
+    {
         $context = $event->getContext();
         $page = $event->getPage();
         $product = $page->getProduct();
@@ -59,7 +69,32 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
 
             }
         }
+    }
 
+    private function addDownloadableMedia(ProductPageLoadedEvent $event)
+    {
+        $page = $event->getPage();
+        if ($page->getProduct()) {
+            $productId = $page->getProduct()->getId();
+
+            $criteria = new Criteria([$productId]);
+            $criteria->addAssociation('media');
+            $criteria->getAssociation('media')->addFilter(
+                new NotFilter(
+                    NotFilter::CONNECTION_AND,
+                    [
+                        new PrefixFilter('media.mimeType', 'image/')
+                    ]
+                ));
+            $product = $this->productRepository->search($criteria, $event->getContext())->first();
+
+            if ($product->getMedia()) {
+                $product->getMedia()->sort(function (ProductMediaEntity $a, ProductMediaEntity $b) {
+                    return $a->getPosition() <=> $b->getPosition();
+                });
+                $page->addExtension('downloadableMedia', $product->getMedia());
+            }
+        }
     }
 
     private function findSalesChannelDomainUrl(string $salesChannelId, $context, $secure): ?string

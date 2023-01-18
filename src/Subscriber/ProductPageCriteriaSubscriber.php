@@ -2,6 +2,9 @@
 
 namespace Warexo\Subscriber;
 
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Storefront\Page\Product\ProductPageCriteriaEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -23,5 +26,10 @@ class ProductPageCriteriaSubscriber implements EventSubscriberInterface
         $criteria->addAssociation('warexoProductOptions.productOptionValues.media');
         $criteria->getAssociation('warexoProductOptions')->addSorting(new FieldSorting('position'));
         $criteria->getAssociation('warexoProductOptions.productOptionValues')->addSorting(new FieldSorting('position'));
+
+        // filter pdf media
+        $criteria->getAssociation('media')->addFilter(
+            new PrefixFilter('media.mimeType', 'image/')
+        );
     }
 }

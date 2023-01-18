@@ -1,0 +1,24 @@
+{% sw_extends '@Storefront/storefront/utilities/offcanvas.html.twig' %}
+
+{% block utilities_offcanvas_content %}
+	{% block page_product_detail_download_media_container %}
+        <div class="product-detail-download-media tab-pane-container">
+            {% block page_product_detail_download_media_tab_pane %}
+                <ul class="product-detail-download-media-list">
+                    {% for mediaItem in media %}
+                        <li>
+                                <a href="{{ mediaItem.media.url }}" download target="_blank" {% if mediaItem.media.translated.title %}title="{{ mediaItem.media.translated.title }}"{% endif %} {% if mediaItem.media.translated.alt %}alt="{{ mediaItem.media.translated.alt }}"{% endif %}>
+                                        {% if mediaItem.media.translated.title %}
+                                                {{ mediaItem.media.translated.title }}
+                                        {% else %}
+                                                {{ mediaItem.media.fileName }}
+                                        {% endif %}
+                                        {% sw_icon 'circle-download' %}
+                                </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endblock %}
+        </div>
+    {% endblock %}
+{% endblock %}
