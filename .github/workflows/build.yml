@@ -3,7 +3,7 @@ on: [push]
 
 jobs:
   build:
-    uses: FriendsOfShopware/actions/.github/workflows/github.yml@main
+    uses: aggrosoft/actions/.github/workflows/github.yml@main
     with:
       extensionName: 'AggroWarexoPlugin'
       shopwareVersion: '6.4.0'
