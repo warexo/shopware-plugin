@@ -17,7 +17,11 @@ class Migration1667898711AddProductOptionValueHexCode extends MigrationStep
         $sql = <<<SQL
         ALTER TABLE `warexo_product_option_value` ADD `color_hex_code` VARCHAR(20) NULL;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
     }
 
     public function updateDestructive(Connection $connection): void

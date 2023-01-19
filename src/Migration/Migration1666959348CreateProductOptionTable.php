@@ -25,7 +25,11 @@ class Migration1666959348CreateProductOptionTable extends MigrationStep
             PRIMARY KEY (`id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
     }
 
     public function updateDestructive(Connection $connection): void

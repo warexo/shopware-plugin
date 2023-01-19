@@ -24,7 +24,11 @@ class Migration1666960606CreateProductOptionTranslationTable extends MigrationSt
             PRIMARY KEY (`warexo_product_option_id`, `language_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
         $sql = <<<'SQL'
         ALTER TABLE `warexo_product_option_translation`
             ADD CONSTRAINT `fk.warexo_product_option_translation.warexo_product_option_id`
@@ -33,7 +37,11 @@ class Migration1666960606CreateProductOptionTranslationTable extends MigrationSt
                     ON DELETE CASCADE
                     ON UPDATE CASCADE;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
         $sql = <<<'SQL'
         ALTER TABLE `warexo_product_option_translation`
             ADD CONSTRAINT `fk.warexo_product_option_translation.language_id`
@@ -42,7 +50,11 @@ class Migration1666960606CreateProductOptionTranslationTable extends MigrationSt
                     ON DELETE CASCADE
                     ON UPDATE CASCADE;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
 
     }
 

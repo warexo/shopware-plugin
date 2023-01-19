@@ -17,7 +17,11 @@ class Migration1667812743AddProductOptionDescription extends MigrationStep
         $sql = <<<SQL
         ALTER TABLE `warexo_product_option_translation` ADD `description` TEXT NULL;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
     }
 
     public function updateDestructive(Connection $connection): void

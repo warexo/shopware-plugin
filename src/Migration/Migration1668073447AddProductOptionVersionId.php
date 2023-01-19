@@ -17,11 +17,19 @@ class Migration1668073447AddProductOptionVersionId extends MigrationStep
         $sql = <<<SQL
         ALTER TABLE `warexo_product_to_product_option` ADD `product_version_id` BINARY(16) NOT NULL;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
         $sql = <<<SQL
         ALTER TABLE `warexo_product_to_product_option` DROP PRIMARY KEY, ADD PRIMARY KEY (`product_id`, `product_version_id`, `warexo_product_option_id`);
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
     }
 
     public function updateDestructive(Connection $connection): void

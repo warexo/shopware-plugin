@@ -17,12 +17,20 @@ class Migration1667812036AddProductOptionCustomFields extends MigrationStep
         $sql = <<<SQL
         ALTER TABLE `warexo_product_option_translation` ADD `custom_fields` JSON;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
 
         $sql = <<<SQL
         ALTER TABLE `warexo_product_option_value_translation` ADD `custom_fields` JSON;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
     }
 
     public function updateDestructive(Connection $connection): void

@@ -21,7 +21,11 @@ class Migration1666960592CreateProductToProductOptionTable extends MigrationStep
             PRIMARY KEY (`product_id`, `warexo_product_option_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
         $sql = <<<'SQL'
         ALTER TABLE `warexo_product_to_product_option`
             ADD CONSTRAINT `fk.warexo_product_to_product_option.product_id`
@@ -30,7 +34,11 @@ class Migration1666960592CreateProductToProductOptionTable extends MigrationStep
                     ON DELETE CASCADE
                     ON UPDATE CASCADE;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
         $sql = <<<'SQL'
         ALTER TABLE `warexo_product_to_product_option`
             ADD CONSTRAINT `fk.warexo_product_to_product_option.warexo_product_option_id`
@@ -39,7 +47,11 @@ class Migration1666960592CreateProductToProductOptionTable extends MigrationStep
                     ON DELETE CASCADE
                     ON UPDATE CASCADE;
         SQL;
-        $connection->executeStatement($sql);
+        try{
+            $connection->executeStatement($sql);
+        }catch (\Exception $e){
+
+        }
     }
 
     public function updateDestructive(Connection $connection): void
