@@ -17,7 +17,12 @@ class Migration1668077337UpdateProductInheritance extends MigrationStep
 
     public function update(Connection $connection): void
     {
-        $this->updateInheritance($connection, 'product', 'warexoProductOptions');
+        try{
+            $this->updateInheritance($connection, 'product', 'warexoProductOptions');
+        }catch (\Exception $e){
+
+        }
+
     }
 
     public function updateDestructive(Connection $connection): void
