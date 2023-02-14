@@ -12,6 +12,7 @@ use Shopware\Core\System\CustomField\CustomFieldTypes;
 
 class AggroWarexoPlugin extends Plugin
 {
+
     public function install(Plugin\Context\InstallContext $installContext): void
     {
 
@@ -22,13 +23,13 @@ class AggroWarexoPlugin extends Plugin
                     'name' => 'warexo_category_custom_fields',
                     'config' => [
                         'label' => [
-                            'de-DE' => 'Warexo',
-                            'en-GB' => 'Warexo',
+                            'de-DE' => 'Warexo Kategorie Felder',
+                            'en-GB' => 'Warexo Category Fields'
                         ]
                     ],
                     'customFields' => [
                         [
-                            'name' => 'warexo_icon',
+                            'name' => 'custom_warexo_icon',
                             'type' => CustomFieldTypes::TEXT,
                             'config' => [
                                 'label' => [
