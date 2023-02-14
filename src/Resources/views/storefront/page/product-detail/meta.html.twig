@@ -8,6 +8,8 @@
             {% set canonicalUrl = page.product.parentId %}
         {% elseif page.product.canonicalProductId %}
             {% set canonicalUrl = page.product.canonicalProductId %}
+        {% else %}
+            {% set canonicalUrl = page.product.id %}
         {% endif %}
 
         <link rel="canonical" href="{{ seoUrl('frontend.detail.page', { productId: canonicalUrl }) }}" />
