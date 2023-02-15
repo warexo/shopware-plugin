@@ -33,6 +33,9 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="Warexo\Service\CategorySortUpdater.inner" />
         </service>
+        <service id="Warexo\Core\Framework\DataAbstractionLayer\FieldSerializer\StringFieldSerializer" decorates="Shopware\Core\Framework\DataAbstractionLayer\FieldSerializer\StringFieldSerializer">
+            <argument type="service" id="Warexo\Core\Framework\DataAbstractionLayer\FieldSerializer\StringFieldSerializer.inner" />
+        </service>
 
         <!-- event listeners -->
         <service id="Warexo\Subscriber\KernelControllerSubscriber">
