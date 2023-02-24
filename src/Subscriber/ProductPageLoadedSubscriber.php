@@ -75,24 +75,20 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
     {
         $page = $event->getPage();
         if ($page->getProduct()) {
-            $productId = $page->getProduct()->getId();
+            $productId = $page->getProduct()->getParentId() ?: $page->getProduct()->getId();
 
             $criteria = new Criteria([$productId]);
             $criteria->addAssociation('media');
-            $criteria->getAssociation('media')->addFilter(
-                new NotFilter(
-                    NotFilter::CONNECTION_AND,
-                    [
-                        new PrefixFilter('media.mimeType', 'image/')
-                    ]
-                ));
+            $criteria->addAssociation('media.media');
             $product = $this->productRepository->search($criteria, $event->getContext())->first();
 
             if ($product->getMedia()) {
                 $product->getMedia()->sort(function (ProductMediaEntity $a, ProductMediaEntity $b) {
                     return $a->getPosition() <=> $b->getPosition();
                 });
-                $page->addExtension('downloadableMedia', $product->getMedia());
+                $page->addExtension('downloadableMedia', $product->getMedia()->filter(function($media) {
+                    return str_starts_with($media->getMedia()->getMimeType(), 'image/') === false;
+                }));
             }
         }
     }
