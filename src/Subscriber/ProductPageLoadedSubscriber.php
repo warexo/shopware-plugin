@@ -19,7 +19,7 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
 {
     private AbstractSeoResolver $resolver;
     private EntityRepositoryInterface $salesChannelDomainRepository;
-    private EntityRepositoryInterface $productRepository;
+    private EntityRepositoryInterface $productMediaRepository;
 
     public static function getSubscribedEvents(): array
     {
@@ -31,12 +31,12 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
     public function __construct(
         AbstractSeoResolver $resolver,
         EntityRepositoryInterface $salesChannelDomainRepository,
-        EntityRepositoryInterface $productRepository
+        EntityRepositoryInterface $productMediaRepository
     )
     {
         $this->resolver = $resolver;
         $this->salesChannelDomainRepository = $salesChannelDomainRepository;
-        $this->productRepository = $productRepository;
+        $this->productMediaRepository = $productMediaRepository;
     }
 
     public function onProductPageLoaded(ProductPageLoadedEvent $event)
@@ -77,18 +77,22 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
         if ($page->getProduct()) {
             $productId = $page->getProduct()->getParentId() ?: $page->getProduct()->getId();
 
-            $criteria = new Criteria([$productId]);
+            $criteria = new Criteria();
             $criteria->addAssociation('media');
-            $criteria->addAssociation('media.media');
-            $product = $this->productRepository->search($criteria, $event->getContext())->first();
+            $criteria->addFilter(new EqualsFilter('productId', $productId));
+            $criteria->addFilter(
+                new NotFilter(NotFilter::CONNECTION_AND, [
+                    new PrefixFilter('media.mimeType', 'image/')
+                ])
+            );
+            /** @var ProductMediaCollection $medias */
+            $medias = $this->productMediaRepository->search($criteria, $event->getContext());
 
-            if ($product->getMedia()) {
-                $product->getMedia()->sort(function (ProductMediaEntity $a, ProductMediaEntity $b) {
+            if (count($medias)) {
+                $medias->sort(function (ProductMediaEntity $a, ProductMediaEntity $b) {
                     return $a->getPosition() <=> $b->getPosition();
                 });
-                $page->addExtension('downloadableMedia', $product->getMedia()->filter(function($media) {
-                    return str_starts_with($media->getMedia()->getMimeType(), 'image/') === false;
-                }));
+                $page->addExtension('downloadableMedia', $medias);
             }
         }
     }
