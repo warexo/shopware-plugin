@@ -29,7 +29,7 @@ class StringFieldSerializer extends AbstractFieldSerializer
     ): \Generator {
 
         if (!$field->is(AllowHtml::class)) {
-            $data->setValue(preg_replace('/<(\w)/m', '< $1', (string) $data->getValue()));
+            $data->setValue(preg_replace('/<(\w)/m', '< $1', html_entity_decode((string) $data->getValue())));
         }
 
         return $this->decorated->encode($field, $existence, $data, $parameters);
