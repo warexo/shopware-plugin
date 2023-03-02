@@ -83,25 +83,28 @@ class CategorySortUpdater extends TreeUpdater
         $sortedChildren = $this->getSortedChildren($children);
 
         foreach($children as $child) {
-            $position = array_search($child['id'], $sortedChildren);
+            $position = intval(array_search($child['id'], $sortedChildren));
             $extension = $this->getWarexoExtension($child['id']);
 
             if ($extension) {
                 if ($extension['position'] !== $position) {
-                    $sql = 'UPDATE warexo_category_extension SET position = :position WHERE id = :id';
+                    $sql = 'UPDATE warexo_category_extension SET position = :position, updated_at = :updated_at WHERE id = :id';
                     $statement = $this->connection->prepare($sql);
                     $statement->execute([
                         'position' => $position,
-                        'id' => $extension['id']
+                        'id' => $extension['id'],
+                        'updated_at' => (new \DateTime())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                     ]);
                 }
             }else{
-                $sql = 'INSERT INTO warexo_category_extension (id, category_id, position) VALUES (:id, :category_id, :position)';
+                $sql = 'INSERT INTO warexo_category_extension (id, category_id, position, created_at, updated_at) VALUES (:id, :category_id, :position, :created_at, :updated_at)';
                 $statement = $this->connection->prepare($sql);
                 $statement->execute([
                     'id' => Uuid::randomBytes(),
                     'category_id' => $child['id'],
-                    'position' => $position
+                    'position' => $position,
+                    'created_at' => (new \DateTime())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
+                    'updated_at' => (new \DateTime())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
                 ]);
             }
         }
