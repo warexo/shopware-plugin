@@ -67,6 +67,9 @@
         <service id="Warexo\Extension\Content\Category\CategoryExtensionDefinition">
             <tag name="shopware.entity.definition" entity="warexo_category_extension" />
         </service>
+        <service id="Warexo\Extension\Content\Product\ProductExtensionDefinition">
+            <tag name="shopware.entity.definition" entity="warexo_product_extension" />
+        </service>
         <service id="Warexo\Core\Content\ProductOption\WarexoProductOptionDefinition">
             <tag name="shopware.entity.definition" entity="warexo_product_option" />
         </service>
