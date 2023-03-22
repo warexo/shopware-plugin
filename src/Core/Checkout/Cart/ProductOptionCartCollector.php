@@ -29,8 +29,15 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
 
     public function collect(CartDataCollection $data, Cart $original, SalesChannelContext $context, CartBehavior $behavior): void
     {
+        if ($data->has('optionValueSelections')) {
+            return;
+        }
+
         $selections = [];
-        foreach ($original->getLineItems() as $lineItem) {
+
+        $lineItems = $original->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE);
+
+        foreach ($lineItems as $lineItem) {
             $product = $this->getLineItemProduct($lineItem, $context);
             $options = $product->getExtension('warexoProductOptions');
 
