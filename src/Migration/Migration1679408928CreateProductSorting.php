@@ -20,7 +20,7 @@ class Migration1679408928CreateProductSorting extends MigrationStep
         $warexoProductSorting = [
             'id' => Uuid::randomBytes(),
             'url_key' => 'warexo',  // shown in url - must be unique system wide
-            'priority' => -1,                // the higher the priority, the further upwards it will be shown in the sortings dropdown in Storefront
+            'priority' => 0,                // the higher the priority, the further upwards it will be shown in the sortings dropdown in Storefront
             'active' => 0,                  // activate / deactivate the sorting
             'locked' => 0,                  // you can lock the sorting here to prevent it from being edited in the Administration
             'fields' => json_encode([
