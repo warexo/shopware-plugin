@@ -75,7 +75,7 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
     {
         $page = $event->getPage();
         if ($page->getProduct()) {
-            $productId = $page->getProduct()->getParentId() ?: $page->getProduct()->getId();
+            $productId = $page->getProduct()->getId();
 
             $criteria = new Criteria();
             $criteria->addAssociation('media');
