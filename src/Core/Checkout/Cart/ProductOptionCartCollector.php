@@ -8,7 +8,7 @@ use Shopware\Core\Checkout\Cart\CartDataCollectorInterface;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -16,11 +16,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 
 class ProductOptionCartCollector implements CartDataCollectorInterface
 {
-    private EntityRepositoryInterface $productRepository;
-    private EntityRepositoryInterface $productOptionRepository;
-    private EntityRepositoryInterface $productOptionValueRepository;
+    private EntityRepository $productRepository;
+    private EntityRepository $productOptionRepository;
+    private EntityRepository $productOptionValueRepository;
 
-    public function __construct(EntityRepositoryInterface $productRepository, EntityRepositoryInterface $productOptionRepository, EntityRepositoryInterface $productOptionValueRepository)
+    public function __construct(EntityRepository $productRepository, EntityRepository $productOptionRepository, EntityRepository $productOptionValueRepository)
     {
         $this->productRepository = $productRepository;
         $this->productOptionRepository = $productOptionRepository;

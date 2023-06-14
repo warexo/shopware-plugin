@@ -2,6 +2,7 @@
 
 namespace Warexo\Service;
 
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Shopware\Storefront\Page\Navigation\NavigationPageLoaderInterface;
 use Shopware\Storefront\Page\Navigation\NavigationPage;
@@ -10,7 +11,6 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\Content\Category\SalesChannel\AbstractCategoryRoute;
 use Shopware\Core\Content\Seo\AbstractSeoResolver;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 
 /**
@@ -23,13 +23,13 @@ class NavigationPageLoaderDecorator implements NavigationPageLoaderInterface
     private NavigationPageLoaderInterface $decoratedService;
     private AbstractCategoryRoute $cmsPageRoute;
     private AbstractSeoResolver $resolver;
-    private EntityRepositoryInterface $salesChannelDomainRepository;
+    private EntityRepository $salesChannelDomainRepository;
 
     public function __construct(
         NavigationPageLoaderInterface $navigationPageLoader,
         AbstractCategoryRoute $cmsPageRoute,
         AbstractSeoResolver $resolver,
-        EntityRepositoryInterface $salesChannelDomainRepository
+        EntityRepository $salesChannelDomainRepository
     )
     {
         $this->decoratedService = $navigationPageLoader;

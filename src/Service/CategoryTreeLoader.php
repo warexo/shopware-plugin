@@ -5,8 +5,8 @@ namespace Warexo\Service;
 use Shopware\Core\Content\Category\Tree\Tree;
 use Shopware\Core\Content\Category\Tree\TreeItem;
 use Shopware\Core\Content\Category\Event\NavigationLoadedEvent;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Util\AfterSort;
@@ -15,12 +15,12 @@ use Shopware\Core\Framework\Context;
 class CategoryTreeLoader
 {
 
-    private EntityRepositoryInterface $categoryRepository;
+    private EntityRepository $categoryRepository;
     private EventDispatcherInterface $eventDispatcher;
     private TreeItem $treeItem;
 
     public function __construct(
-        EntityRepositoryInterface $categoryRepository,
+        EntityRepository $categoryRepository,
         EventDispatcherInterface $eventDispatcher
     ) {
         $this->categoryRepository = $categoryRepository;

@@ -6,7 +6,7 @@ use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaCollection;
 use Shopware\Core\Content\Product\Aggregate\ProductMedia\ProductMediaEntity;
 use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Content\Seo\AbstractSeoResolver;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepositoryInterface;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -18,8 +18,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class ProductPageLoadedSubscriber implements EventSubscriberInterface
 {
     private AbstractSeoResolver $resolver;
-    private EntityRepositoryInterface $salesChannelDomainRepository;
-    private EntityRepositoryInterface $productMediaRepository;
+    private EntityRepository $salesChannelDomainRepository;
+    private EntityRepository $productMediaRepository;
 
     public static function getSubscribedEvents(): array
     {
@@ -30,8 +30,8 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
 
     public function __construct(
         AbstractSeoResolver $resolver,
-        EntityRepositoryInterface $salesChannelDomainRepository,
-        EntityRepositoryInterface $productMediaRepository
+        EntityRepository $salesChannelDomainRepository,
+        EntityRepository $productMediaRepository
     )
     {
         $this->resolver = $resolver;
