@@ -96,11 +96,11 @@
             <argument type="service" id="product.repository"/>
             <argument type="service" id="warexo_product_option.repository"/>
             <argument type="service" id="warexo_product_option_value.repository"/>
-            <tag name="shopware.cart.collector" />
+            <tag name="shopware.cart.collector" priority="4901"/>
         </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
-            <tag name="shopware.cart.processor" />
+            <tag name="shopware.cart.processor" priority="4901"/>
         </service>
 
     </services>
