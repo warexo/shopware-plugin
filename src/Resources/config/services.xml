@@ -75,6 +75,10 @@
         <service id="Warexo\Extension\Content\Product\ProductExtensionDefinition">
             <tag name="shopware.entity.definition" entity="warexo_product_extension" />
         </service>
+        <service id="Warexo\Elasticsearch\Product\ProductEsDecorator" decorates="Shopware\Elasticsearch\Product\ElasticsearchProductDefinition">
+            <argument type="service" id="Warexo\Elasticsearch\Product\ProductEsDecorator.inner"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
         <service id="Warexo\Core\Content\ProductOption\WarexoProductOptionDefinition">
             <tag name="shopware.entity.definition" entity="warexo_product_option" />
         </service>
@@ -96,11 +100,11 @@
             <argument type="service" id="product.repository"/>
             <argument type="service" id="warexo_product_option.repository"/>
             <argument type="service" id="warexo_product_option_value.repository"/>
-            <tag name="shopware.cart.collector" />
+            <tag name="shopware.cart.collector" priority="4901" />
         </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
-            <tag name="shopware.cart.processor" />
+            <tag name="shopware.cart.processor" priority="4901" />
         </service>
 
     </services>
