@@ -17,6 +17,9 @@
                 <argument type="service" id="service_container"/>
             </call>
         </service>
+        <service id="Warexo\Core\Content\Product\DataAbstractionLayer\Indexer\CanonicalCategoryIndexer">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
 
         <!-- service extensions -->
         <service id="Warexo\Service\ProductVariationBuilderDecorator" decorates="Shopware\Core\Content\Product\ProductVariationBuilder">
@@ -35,6 +38,13 @@
         </service>
         <service id="Warexo\Core\Framework\DataAbstractionLayer\FieldSerializer\StringFieldSerializer" decorates="Shopware\Core\Framework\DataAbstractionLayer\FieldSerializer\StringFieldSerializer">
             <argument type="service" id="Warexo\Core\Framework\DataAbstractionLayer\FieldSerializer\StringFieldSerializer.inner" />
+        </service>
+        <service id="Warexo\Core\Content\Sitemap\Provider\ProductUrlProvider" decorates="Shopware\Core\Content\Sitemap\Provider\ProductUrlProvider">
+            <argument type="service" id="Warexo\Core\Content\Sitemap\Provider\ProductUrlProvider.inner"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
+        <service id="Warexo\Core\Content\Product\DataAbstractionLayer\StockUpdate\StockUpdateFilter">
+            <tag name="shopware.product.stock_filter"/>
         </service>
 
         <!-- event listeners -->
@@ -57,6 +67,11 @@
         <service id="Warexo\Subscriber\OrderStateChangeSubscriber">
             <argument type="service" id="order_transaction.repository"/>
             <argument type="service" id="order.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="Warexo\Subscriber\ProductWrittenSubscriber">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="event_dispatcher"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
@@ -102,6 +117,7 @@
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
             <tag name="shopware.cart.processor" priority="4901"/>
         </service>
+
 
     </services>
 </container>
