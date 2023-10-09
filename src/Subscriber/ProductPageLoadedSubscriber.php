@@ -61,7 +61,7 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
                     $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/detail/'.$productId);
                     if ($seoUrl && isset($seoUrl['canonicalPathInfo'])) {
                         $domain = $this->findSalesChannelDomainUrl($salesChannelId, $context, $event->getRequest()->isSecure());
-                        if ($domain) {
+                        if ($domain && $page->getMetaInformation()) {
                             $page->getMetaInformation()->setCanonical($domain.$seoUrl['canonicalPathInfo']);
                         }
                     }
