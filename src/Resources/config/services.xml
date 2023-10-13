@@ -46,6 +46,10 @@
         <service id="Warexo\Core\Content\Product\DataAbstractionLayer\StockUpdate\StockUpdateFilter">
             <tag name="shopware.product.stock_filter"/>
         </service>
+        <service id="Warexo\Elasticsearch\Product\ProductEsDecorator" decorates="Shopware\Elasticsearch\Product\ElasticsearchProductDefinition">
+            <argument type="service" id="Warexo\Elasticsearch\Product\ProductEsDecorator.inner"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+        </service>
 
         <!-- event listeners -->
         <service id="Warexo\Subscriber\KernelControllerSubscriber">

@@ -4,6 +4,7 @@ namespace Warexo\Extension\Content\Product;
 
 use Shopware\Core\Content\Product\ProductDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ApiAware;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
@@ -31,7 +32,7 @@ class ProductExtensionDefinition extends EntityDefinition
         return new FieldCollection([
             (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
             new FkField('product_id', 'productId', ProductDefinition::class),
-            (new IntField('position', 'position')),
+            (new IntField('position', 'position'))->addFlags(new ApiAware()),
 
             new OneToOneAssociationField('product', 'product_id', 'id', ProductDefinition::class, false)
         ]);

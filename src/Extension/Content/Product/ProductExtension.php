@@ -10,6 +10,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyAssociationFiel
 use Shopware\Core\Framework\DataAbstractionLayer\Field\ManyToManyIdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
+
 use Warexo\Core\Content\ProductOption\Aggregate\ProductProductOption\WarexoProductProductOptionDefinition;
 use Warexo\Core\Content\ProductOption\WarexoProductOptionDefinition;
 
@@ -28,7 +29,7 @@ class ProductExtension extends EntityExtension
         );
 
         $collection->add(
-            new OneToOneAssociationField('warexoExtension', 'id', 'product_id', ProductExtensionDefinition::class, true)
+            (new OneToOneAssociationField('warexoExtension', 'id', 'product_id', ProductExtensionDefinition::class, true))->addFlags(new ApiAware())
         );
     }
 
