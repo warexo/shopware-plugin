@@ -1,0 +1,13 @@
+{% sw_extends '@Storefront/storefront/component/line-item/element/variant-characteristics.html.twig' %}
+
+{% block component_line_item_variant_characteristics %}
+    {{ parent() }}
+
+    {% if lineItem.payload.warexoProductOptionSelections %}
+        {% for selection in lineItem.payload.warexoProductOptionSelections %}
+            <div class="line-item-product-option-selections">
+                {{ selection.option }}: {{ selection.value }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
