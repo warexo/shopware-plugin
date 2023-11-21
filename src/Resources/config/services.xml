@@ -41,7 +41,12 @@
         </service>
         <service id="Warexo\Core\Content\Sitemap\Provider\ProductUrlProvider" decorates="Shopware\Core\Content\Sitemap\Provider\ProductUrlProvider">
             <argument type="service" id="Warexo\Core\Content\Sitemap\Provider\ProductUrlProvider.inner"/>
+            <argument type="service" id="Shopware\Core\Content\Sitemap\Service\ConfigHandler"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\Content\Product\ProductDefinition"/>
+            <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\Dbal\Common\IteratorFactory"/>
+            <argument type="service" id="router"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
         </service>
         <service id="Warexo\Core\Content\Product\DataAbstractionLayer\StockUpdate\StockUpdateFilter">
             <tag name="shopware.product.stock_filter"/>
