@@ -8,7 +8,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Elasticsearch\Framework\AbstractElasticsearchDefinition;
-use Shopware\Elasticsearch\Framework\Indexing\EntityMapper;
 
 class ProductEsDecorator extends AbstractElasticsearchDefinition
 {
@@ -43,7 +42,7 @@ class ProductEsDecorator extends AbstractElasticsearchDefinition
         $mapping['properties']['warexoExtension'] = [
             'type' => 'nested',
             'properties' => [
-                'position' => EntityMapper::INT_FIELD,
+                'position' => self::INT_FIELD,
             ],
         ];
 
