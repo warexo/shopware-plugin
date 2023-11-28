@@ -1,0 +1,25 @@
+{% block component_product_options_option_text %}
+    {% for value in option.productOptionValues %}
+    <div class="product-detail-product-option-value-group is-display-text">
+        {% block component_product_options_option_text_input %}
+        <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
+        {% endblock %}
+        {% block component_product_options_option_text_label %}
+        <label class="product-detail-product-option-label" title="{{ value.name }}" for="selection-{{ option.id }}-{{ value.id }}" style="background-color: {{ value.colorHexCode }};">
+            {% block component_product_options_option_text_label_value %}
+                {{ value.name }}
+            {% endblock %}
+            {% block component_product_options_option_text_label_surcharge %}
+                {% if value.surcharge %}
+                    {% if value.surcharge.surchargeType == 'abs' %}
+                        (+ {{ value.surcharge.price|floatval|currency }} )
+                    {% else %}
+                        (+ {{ value.surcharge.price }}%)
+                    {% endif %}
+                {% endif %}
+            {% endblock %}
+        </label>
+        {% endblock %}
+    </div>
+    {% endfor %}
+{% endblock %}

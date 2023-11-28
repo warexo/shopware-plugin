@@ -1,0 +1,28 @@
+{% block component_product_options_option_color %}
+    {% for value in option.productOptionValues %}
+    <div class="product-detail-product-option-value-group is-display-color">
+        {% block component_product_options_option_color_input %}
+        <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
+        {% endblock %}
+        {% block component_product_options_option_color_label %}
+        <label class="product-detail-product-option-label" title="{{ value.name }}" for="selection-{{ option.id }}-{{ value.id }}" style="background-color: {{ value.colorHexCode }};">
+            {% block component_product_options_option_color_label_media %}
+                {% if value.media %}
+                    {% sw_thumbnails 'product-option-img-thumbnails' with {
+                        media: value.media,
+                        sizes: {
+                            'default': '52px'
+                        },
+                        attributes: {
+                            'class': 'product-detail-product-option-image',
+                            'alt': option.name,
+                            'title': option.name
+                        }
+                    } %}
+                {% endif %}
+            {% endblock %}
+        </label>
+        {% endblock %}
+    </div>
+    {% endfor %}
+{% endblock %}

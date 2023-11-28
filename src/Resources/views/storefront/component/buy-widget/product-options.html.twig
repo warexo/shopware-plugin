@@ -1,0 +1,21 @@
+{% block component_product_options %}
+<div class="product-detail-product-options">
+    {% for option in product.extensions.warexoProductOptions %}
+        {% block component_product_options_option %}
+        <div class="product-detail-product-option">
+            {% block component_product_options_option_name %}
+            <label class="product-detail-product-option-name">
+                {{ option.name }}
+            </label>
+            {% endblock %}
+            {% block component_product_options_option_values %}
+            <div class="product-detail-product-option-values">
+                {% set displayType = option.displayType ?? 'select' %}
+                {% sw_include '@Storefront/storefront/component/buy-widget/product-option/option-'~displayType~'.html.twig' ignore missing %}
+            </div>
+            {% endblock %}
+        </div>
+        {% endblock %}
+    {% endfor %}
+</div>
+{% endblock %}
