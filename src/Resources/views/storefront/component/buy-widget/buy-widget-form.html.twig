@@ -1,9 +1,11 @@
 {% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
 
 {% block buy_widget_buy_container %}
-    {% if product.extensions.warexoProductOptions|length > 0 %}
-        {% sw_include '@Storefront/storefront/component/buy-widget/product-options.html.twig' %}
-    {% endif %}
+    {% block buy_widget_buy_container_product_options %}
+        {% if product.extensions.warexoProductOptions|length > 0 %}
+            {% sw_include '@Storefront/storefront/component/buy-widget/product-options.html.twig' %}
+        {% endif %}
+    {% endblock %}
 
     {{ parent() }}
 {% endblock %}
