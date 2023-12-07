@@ -3,7 +3,10 @@
 {% block page_product_detail_buy_container %}
     {% block page_product_detail_buy_container_product_options %}
         {% if product.extensions.warexoProductOptions|length > 0 %}
-            {% sw_include '@Storefront/storefront/component/buy-widget/product-options.html.twig' %}
+            {% sw_include '@Storefront/storefront/component/buy-widget/product-options.html.twig' with {
+                productOptions: product.extensions.warexoProductOptions,
+                productId: product.id
+            } %}
         {% endif %}
     {% endblock %}
 

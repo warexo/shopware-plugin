@@ -1,5 +1,5 @@
 {% block component_product_options_option_select %}
-    <select name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" class="custom-select product-detail-product-option-value-input">
+    <select name="lineItems[{{ productId }}][warexoProductOptions][{{ option.id }}]" class="custom-select product-detail-product-option-value-input">
         {% block component_product_options_option_select_values %}
             {% for value in option.productOptionValues %}
                 {% block component_product_options_option_select_values_value %}

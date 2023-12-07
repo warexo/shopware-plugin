@@ -1,0 +1,12 @@
+{% block element_product_options %}
+    {% set config = element.fieldConfig.elements %}
+    {% set data = element.data %}
+    <div class="cms-element-{{ element.type }}">
+        {% block element_product_options_inner %}
+            {% sw_include '@Storefront/storefront/component/buy-widget/product-options.html.twig' with {
+                productOptions: data.productOptions,
+                productId: data.productId
+            } %}
+        {% endblock %}
+    </div>
+{% endblock %}

@@ -1,0 +1,33 @@
+@import "~scss/variables";
+
+.sw-cms-el-preview-product-options {
+    height: 100%;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+
+    &__variation-title {
+        font-size: 16px;
+        line-height: 18px;
+    }
+
+    &__variants {
+        display: flex;
+        column-gap: 10px;
+    }
+
+    &__variant {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 30px;
+        width: 30px;
+        border-radius: 3px;
+        background-color: $color-darkgray-200;
+        color: $color-white;
+        font-size: 12px;
+        font-weight: $font-weight-semi-bold;
+    }
+
+}

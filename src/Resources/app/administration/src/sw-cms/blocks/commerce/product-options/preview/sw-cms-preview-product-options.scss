@@ -1,0 +1,15 @@
+.sw-cms-preview-product-options {
+  padding: 15px;
+  .sw-field {
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    &__label {
+      width: 30%;
+    }
+  }
+  .sw-field:last-child {
+    margin-bottom: 0;
+  }
+
+}

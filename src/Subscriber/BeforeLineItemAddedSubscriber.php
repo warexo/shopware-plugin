@@ -26,8 +26,9 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
     {
         $lineItem = $event->getLineItem();
         $lineItems = $this->requestStack->getCurrentRequest()->get('lineItems');
+
         if($lineItems) {
-            foreach ($this->requestStack->getCurrentRequest()->get('lineItems') as $key => $item) {
+            foreach ($lineItems as $key => $item) {
                 if ($lineItem->getId() == $key && isset($item['warexoProductOptions'])) {
                     $cart = $event->getCart();
                     $cart->remove($lineItem->getId());

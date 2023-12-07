@@ -1,0 +1,16 @@
+{
+  "sw-cms": {
+    "blocks": {
+      "commerce": {
+        "product-options": {
+          "label": "Warexo Produkt Optionen"
+        }
+      }
+    },
+    "elements": {
+      "product-options": {
+        "label": "Warexo Produkt Optionen"
+      }
+    }
+  }
+}

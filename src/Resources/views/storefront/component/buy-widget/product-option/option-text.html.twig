@@ -2,7 +2,7 @@
     {% for value in option.productOptionValues %}
     <div class="product-detail-product-option-value-group is-display-text">
         {% block component_product_options_option_text_input %}
-        <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ product.id }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
+        <input class="product-detail-product-option-value-input" type="radio" name="lineItems[{{ productId }}][warexoProductOptions][{{ option.id }}]" id="selection-{{ option.id }}-{{ value.id }}" value="{{ value.id }}">
         {% endblock %}
         {% block component_product_options_option_text_label %}
         <label class="product-detail-product-option-label" title="{{ value.name }}" for="selection-{{ option.id }}-{{ value.id }}" style="background-color: {{ value.colorHexCode }};">

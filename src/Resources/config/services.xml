@@ -127,6 +127,11 @@
             <tag name="shopware.cart.processor" priority="4901"/>
         </service>
 
+        <!-- cms data resolvers -->
+        <service id="Warexo\Core\Content\Cms\DataResolver\Element\ProductOptionsCmsElementResolver">
+            <tag name="shopware.cms.data_resolver" />
+        </service>
+
 
     </services>
 </container>
