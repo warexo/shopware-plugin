@@ -11,15 +11,13 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\ContainsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\NotFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\OrFilter;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\PrefixFilter;
 use Shopware\Storefront\Page\Product\ProductPageLoadedEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class ProductPageLoadedSubscriber implements EventSubscriberInterface
 {
-    private AbstractSeoResolver $resolver;
-    private EntityRepository $salesChannelDomainRepository;
-    private EntityRepository $productMediaRepository;
 
     public static function getSubscribedEvents(): array
     {
@@ -29,14 +27,11 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
     }
 
     public function __construct(
-        AbstractSeoResolver $resolver,
-        EntityRepository $salesChannelDomainRepository,
-        EntityRepository $productMediaRepository
+        private readonly AbstractSeoResolver $resolver,
+        private readonly EntityRepository $salesChannelDomainRepository,
+        private readonly EntityRepository $productMediaRepository
     )
     {
-        $this->resolver = $resolver;
-        $this->salesChannelDomainRepository = $salesChannelDomainRepository;
-        $this->productMediaRepository = $productMediaRepository;
     }
 
     public function onProductPageLoaded(ProductPageLoadedEvent $event)
@@ -76,10 +71,16 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
         $page = $event->getPage();
         if ($page->getProduct()) {
             $productId = $page->getProduct()->getId();
+            $parentId = $page->getProduct()->getParentId();
 
             $criteria = new Criteria();
             $criteria->addAssociation('media');
-            $criteria->addFilter(new EqualsFilter('productId', $productId));
+            $criteria->addFilter(new OrFilter(
+                [
+                    new EqualsFilter('productId', $productId),
+                    new EqualsFilter('productId', $parentId),
+                ]
+            ));
             $criteria->addFilter(
                 new NotFilter(NotFilter::CONNECTION_AND, [
                     new PrefixFilter('media.mimeType', 'image/')
