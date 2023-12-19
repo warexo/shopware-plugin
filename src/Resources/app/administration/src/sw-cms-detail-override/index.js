@@ -6,6 +6,9 @@ Shopware.Component.override('sw-cms-detail', {
             } else {
                 return this.$super('checkRequiredSlotConfigField', slot, block);
             }
+        },
+        isProductPageElement(slot) {
+            return this.$super('isProductPageElement', slot) || slot.type === 'product-options';
         }
     }
 });
