@@ -6,6 +6,6 @@ jobs:
     uses: FriendsOfShopware/actions/.github/workflows/github.yml@main
     with:
       extensionName: 'AggroWarexoPlugin'
-      shopwareVersion: '6.5.0'
+      shopwareVersion: '6.5.7'
     secrets:
       ghToken: ${{ secrets.GH_TOKEN }}
