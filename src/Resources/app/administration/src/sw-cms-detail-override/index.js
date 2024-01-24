@@ -1,5 +1,14 @@
 Shopware.Component.override('sw-cms-detail', {
     methods: {
+        getSlotValidations() {
+            const uniqueSlotCount = {};
+            const requiredMissingSlotConfigs = [];
+            return {
+                requiredMissingSlotConfigs,
+                uniqueSlotCount,
+            };
+        },
+
         checkRequiredSlotConfigField(slot, block) {
             if (this.page.type === 'product_detail' && (slot.type === 'product-options')) {
                 return [];
