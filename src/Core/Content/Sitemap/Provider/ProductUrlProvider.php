@@ -55,9 +55,9 @@ class ProductUrlProvider extends AbstractUrlProvider
 
     public function getUrls(SalesChannelContext $context, int $limit, ?int $offset = null): UrlResult
     {
-        $products = $this->getProducts($context, $limit, $offset);
+        list($products, $unfiltered) = $this->getProducts($context, $limit, $offset);
 
-        if (empty($products)) {
+        if (empty($unfiltered)) {
             return new UrlResult([], null);
         }
 
@@ -91,6 +91,7 @@ class ProductUrlProvider extends AbstractUrlProvider
             $urls[] = $newUrl;
         }
 
+        $keys = FetchModeHelper::keyPair($unfiltered);
         $keys = array_keys($keys);
         /** @var int|null $nextOffset */
         $nextOffset = array_pop($keys);
@@ -141,7 +142,9 @@ class ProductUrlProvider extends AbstractUrlProvider
 
         $products = $query->execute()->fetchAllAssociative();
 
-        return $this->filterForeignCanonicalProducts($products, $context);
+        $filtered = $this->filterForeignCanonicalProducts($products, $context);
+
+        return [ $filtered, $products ];
     }
 
     private function getExcludedProductIds(SalesChannelContext $salesChannelContext): array
@@ -188,6 +191,8 @@ class ProductUrlProvider extends AbstractUrlProvider
         $query->setParameter('ids', Uuid::fromHexToBytesList($productIds), ArrayParameterType::STRING);
         $query->setParameter('sales_channel', Uuid::fromHexToBytes($salesChannelId));
         $query->setParameter('raw_sales_channel', $salesChannelId);
+
+        //@TODO: exclude all products that have any mapped main_category but none in this sales_channel
 
         $toExclude = Uuid::fromBytesToHexList($query->executeQuery()->fetchFirstColumn());
 

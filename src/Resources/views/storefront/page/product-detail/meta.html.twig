@@ -15,3 +15,7 @@
         <link rel="canonical" href="{{ seoUrl('frontend.detail.page', { productId: canonicalUrl }) }}" />
     {% endif %}
 {% endblock %}
+
+{# disable indexing of variant pages
+{% block layout_head_meta_tags_robots %}{% if url('frontend.detail.page', { productId: page.product.parentId }) !== app.request.uri %}NOINDEX{% else %}{{ parent() }}{% endif %}{% endblock %}
+#}
