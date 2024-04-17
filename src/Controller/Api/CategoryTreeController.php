@@ -10,7 +10,7 @@ use Shopware\Core\Framework\Context;
 use Symfony\Component\Routing\Attribute\Route;
 use Warexo\Service\CategoryTreeLoader;
 
-#[Route(defaults: ['_routeScope' => ['storefront']])]
+#[Route(defaults: ['_routeScope' => ['api']])]
 class CategoryTreeController extends AbstractController
 {
 
