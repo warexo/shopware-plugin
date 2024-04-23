@@ -15,17 +15,12 @@ use Shopware\Core\Framework\DataAbstractionLayer\Indexing\TreeUpdater;
 
 class CategorySortUpdater extends TreeUpdater
 {
-    private TreeUpdater $decoratedService;
-
-    private DefinitionInstanceRegistry $registry;
-
-    private Connection $connection;
-
-    public function __construct(DefinitionInstanceRegistry $registry, Connection $connection, TreeUpdater $treeUpdater)
+    public function __construct(
+        private readonly DefinitionInstanceRegistry $registry,
+        private readonly Connection $connection,
+        private readonly TreeUpdater $decoratedService
+    )
     {
-        $this->registry = $registry;
-        $this->connection = $connection;
-        $this->decoratedService = $treeUpdater;
     }
 
     public function getDecorated(): TreeUpdater
@@ -33,9 +28,10 @@ class CategorySortUpdater extends TreeUpdater
         return $this->decoratedService;
     }
 
-    public function batchUpdate(array $updateIds, string $entity, Context $context): void
+    public function batchUpdate(array $updateIds, string $entity, Context $context/* , bool $recursive = false */): void
     {
-        $this->decoratedService->batchUpdate($updateIds, $entity, $context);
+        $recursive = func_get_arg(3) ?? true;
+        $this->decoratedService->batchUpdate($updateIds, $entity, $context/* , $recursive */);
 
         $updateIds = Uuid::fromHexToBytesList(array_unique($updateIds));
 
@@ -45,7 +41,7 @@ class CategorySortUpdater extends TreeUpdater
 
         // the batch update does not support versioning, so fallback to single updates
         foreach ($updateIds as $id) {
-            $this->singleUpdate(Uuid::fromBytesToHex($id), $entity, $context);
+            $this->singleUpdate(Uuid::fromBytesToHex($id), $entity, $context, $recursive);
         }
 
     }
