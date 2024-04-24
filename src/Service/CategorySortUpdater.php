@@ -28,10 +28,9 @@ class CategorySortUpdater extends TreeUpdater
         return $this->decoratedService;
     }
 
-    public function batchUpdate(array $updateIds, string $entity, Context $context/* , bool $recursive = false */): void
+    public function batchUpdate(array $updateIds, string $entity, Context $context, bool $recursive = false): void
     {
-        $recursive = func_get_arg(3) ?? true;
-        $this->decoratedService->batchUpdate($updateIds, $entity, $context/* , $recursive */);
+        $this->decoratedService->batchUpdate($updateIds, $entity, $context , $recursive);
 
         $updateIds = Uuid::fromHexToBytesList(array_unique($updateIds));
 
@@ -41,7 +40,7 @@ class CategorySortUpdater extends TreeUpdater
 
         // the batch update does not support versioning, so fallback to single updates
         foreach ($updateIds as $id) {
-            $this->singleUpdate(Uuid::fromBytesToHex($id), $entity, $context, $recursive);
+            $this->singleUpdate(Uuid::fromBytesToHex($id), $entity, $context);
         }
 
     }
