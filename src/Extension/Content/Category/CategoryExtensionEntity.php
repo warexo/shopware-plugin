@@ -2,6 +2,7 @@
 
 namespace Warexo\Extension\Content\Category;
 
+use Shopware\Core\Content\Category\CategoryEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
 
@@ -13,6 +14,11 @@ class CategoryExtensionEntity extends Entity
     * @var string
     */
     protected $categoryId;
+
+    /**
+     * @var CategoryEntity|null
+     */
+    protected $category;
 
     /**
     * @var int
@@ -27,6 +33,16 @@ class CategoryExtensionEntity extends Entity
     public function setCategoryId(string $categoryId): void
     {
         $this->categoryId = $categoryId;
+    }
+
+    public function getCategory(): ?CategoryEntity
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?CategoryEntity $category): void
+    {
+        $this->category = $category;
     }
 
     public function getPosition(): int

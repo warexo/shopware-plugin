@@ -2,6 +2,7 @@
 
 namespace Warexo\Extension\Content\Product;
 
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
 
@@ -13,6 +14,11 @@ class ProductExtensionEntity extends Entity
     * @var string
     */
     protected $productId;
+
+    /**
+     * @var ProductEntity|null
+     */
+    protected $product;
 
     /**
     * @var int
@@ -27,6 +33,16 @@ class ProductExtensionEntity extends Entity
     public function setProductId(string $productId): void
     {
         $this->productId = $productId;
+    }
+
+    public function getProduct(): ?ProductEntity
+    {
+        return $this->product;
+    }
+
+    public function setProduct(?ProductEntity $product): void
+    {
+        $this->product = $product;
     }
 
     public function getPosition(): int
