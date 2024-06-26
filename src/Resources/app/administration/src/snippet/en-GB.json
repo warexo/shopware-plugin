@@ -1,0 +1,24 @@
+{
+  "sw-cms": {
+    "blocks": {
+      "commerce": {
+        "product-options": {
+          "label": "Warexo Produkt Optionen"
+        }
+      }
+    },
+    "elements": {
+      "product-options": {
+        "label": "Warexo Produkt Optionen"
+      }
+    }
+  },
+  "sw-property": {
+    "detail": {
+      "label": {
+        "customWarexoPropertyTypeAttribute": "Es handelt sich hierbei um ein aus Warexo importiertes Attribut",
+        "customWarexoPropertyTypeVariantName": "Es handelt sich hierbei um einen aus Warexo importierten Namen der Auswahl einer Variante"
+      }
+    }
+  }
+}

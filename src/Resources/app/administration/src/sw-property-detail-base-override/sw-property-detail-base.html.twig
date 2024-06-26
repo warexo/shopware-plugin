@@ -1,0 +1,8 @@
+{% block sw_property_detail_base_name %}
+
+    <sw-alert variant="info" :title="$tc('sw-property.detail.label.customWarexoPropertyTypeAttribute')" v-if="propertyGroup.customFields?.custom_warexo_property_type == 'attribute'"></sw-alert>
+    <sw-alert variant="info" :title="$tc('sw-property.detail.label.customWarexoPropertyTypeVariantName')" v-if="propertyGroup.customFields?.custom_warexo_property_type == 'variant_name'"></sw-alert>
+
+    {% parent %}
+
+{% endblock %}
