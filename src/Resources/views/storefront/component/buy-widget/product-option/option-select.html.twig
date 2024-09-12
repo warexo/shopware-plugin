@@ -1,9 +1,18 @@
 {% block component_product_options_option_select %}
-    <select name="lineItems[{{ productId }}][warexoProductOptions][{{ option.id }}]" class="custom-select product-detail-product-option-value-input">
+    <select
+            {% if isCustomForm %}
+            data-target="lineItemData"
+            data-field-name="[warexoProductOptions][{{ option.id }}]"
+            {% else %}
+            name="lineItems[{{ productId }}][warexoProductOptions][{{ option.id }}]"
+            {% endif %}
+            class="custom-select product-detail-product-option-value-input{% if isCustomForm %} custom-form-cms-element-input{% endif %}"
+            data-option-id="{{ option.id }}"
+    >
         {% block component_product_options_option_select_values %}
             {% for value in option.productOptionValues %}
                 {% block component_product_options_option_select_values_value %}
-                    <option value="{{ value.id }}">
+                    <option value="{{ value.id }}" {% if value.media %}data-media-url="{{ value.media.url }}"{% endif %} {% if value.colorHexCode %}data-hex-code="{{ value.colorHexCode }}"{% endif %}>
                         {% block component_product_options_option_select_values_value_text %}
                             {{ value.name }}
                         {% endblock %}
