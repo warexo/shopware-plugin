@@ -1,5 +1,3 @@
-import './sw-desktop-override'
-import './sw-page-override'
 import './sw-cms-detail-override'
 import './sw-property-detail-base-override'
 

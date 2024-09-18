@@ -2,7 +2,7 @@
   "name": "aggrosoft/shopware-warexo",
   "description": "Warexo Plugin for Shopware 6",
   "type": "shopware-platform-plugin",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "license": "MIT",
   "autoload": {
     "psr-4": {
