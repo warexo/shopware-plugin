@@ -50,7 +50,7 @@ class ProductPageLoadedSubscriber implements EventSubscriberInterface
         if ($category) {
             $customFields = $category->getCustomFields();
             if ( $this->isCanonicalProduct($customFields) ) {
-                $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSource()->getId();
+                $salesChannelId = isset($customFields['custom_warexo_canonical_saleschannel']) && $customFields['custom_warexo_canonical_saleschannel'] ? $customFields['custom_warexo_canonical_saleschannel'] : $context->getSource()->getSalesChannelId();
                 if ($salesChannelId) {
                     $productId = $product->getParentId() ?: $product->getId();
                     $seoUrl = $this->resolver->resolve($context->getLanguageId(), $salesChannelId, '/detail/'.$productId);

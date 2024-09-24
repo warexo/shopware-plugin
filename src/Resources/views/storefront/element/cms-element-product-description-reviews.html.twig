@@ -1,6 +1,6 @@
 {% sw_extends '@Storefront/storefront/element/cms-element-product-description-reviews.html.twig' %}
 
-{% block element_product_desciption_reviews_tabs_navigation_review %}
+{% block element_product_description_reviews_tabs_navigation_review %}
     {{ parent() }}
     {% if page.extensions.downloadableMedia|length > 0 %}
         <li class="nav-item">
@@ -21,7 +21,7 @@
     {% endif %}
 {% endblock %}
 
-{% block element_product_desciption_reviews_tabs_content_review %}
+{% block element_product_description_reviews_tabs_content_review %}
     {{ parent() }}
 
     {% if page.extensions.downloadableMedia|length > 0 %}
