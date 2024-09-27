@@ -6,7 +6,7 @@
             {% else %}
             name="lineItems[{{ productId }}][warexoProductOptions][{{ option.id }}]"
             {% endif %}
-            class="custom-select product-detail-product-option-value-input{% if isCustomForm %} custom-form-cms-element-input{% endif %}"
+            class="form-select product-detail-product-option-value-input{% if isCustomForm %} custom-form-cms-element-input{% endif %}"
             data-option-id="{{ option.id }}"
     >
         {% block component_product_options_option_select_values %}
