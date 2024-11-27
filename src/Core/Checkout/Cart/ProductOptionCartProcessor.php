@@ -31,7 +31,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
                 $lineItem->setPayloadValue('warexoProductOptionSelections', $lineItemSelections);
 
                 $surcharge = 0;
-                $basePrice = $lineItem->getPrice()->getTotalPrice();
+                $basePrice = $lineItem->getPrice()->getUnitPrice();
 
                 foreach($lineItemSelections as $selection) {
                     if ($selection['surcharge']) {
