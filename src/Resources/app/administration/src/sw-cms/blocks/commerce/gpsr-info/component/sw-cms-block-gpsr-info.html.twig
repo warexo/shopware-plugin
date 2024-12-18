@@ -1,0 +1,11 @@
+<!-- eslint-disable-next-line sw-deprecation-rules/no-twigjs-blocks -->
+{% block sw_cms_block_gpsr_info %}
+    <div
+            class="sw-cms-block-gpsr-info"
+    >
+        <slot name="content">
+            <!-- eslint-disable-next-line sw-deprecation-rules/no-twigjs-blocks -->
+            {% block sw_cms_block_gpsr_info_slot_content %}{% endblock %}
+        </slot>
+    </div>
+{% endblock %}

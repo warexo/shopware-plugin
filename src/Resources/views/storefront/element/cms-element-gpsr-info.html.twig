@@ -1,0 +1,18 @@
+{% block element_gpsr_info %}
+    {% set config = element.fieldConfig.elements %}
+    {% set data = element.data %}
+
+    {% set gpsrCanvasOptions = {
+        infos: data
+    } %}
+
+    <div class="cms-element-{{ element.type }}">
+        {% block element_gpsr_info_inner %}
+            <canvas
+                    data-gpsr-canvas="true"
+                    data-gpsr-canvas-options="{{ gpsrCanvasOptions|default({})|json_encode|escape('html_attr') }}"
+            >
+            </canvas>
+        {% endblock %}
+    </div>
+{% endblock %}

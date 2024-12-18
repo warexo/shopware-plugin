@@ -131,6 +131,10 @@
         <service id="Warexo\Core\Content\Cms\DataResolver\Element\ProductOptionsCmsElementResolver">
             <tag name="shopware.cms.data_resolver" />
         </service>
+        <service id="Warexo\Core\Content\Cms\DataResolver\Element\GpsrInfoCmsElementResolver">
+            <tag name="shopware.cms.data_resolver" />
+        </service>
+
 
 
     </services>
