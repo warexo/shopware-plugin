@@ -16,8 +16,8 @@ export default class GpsrCanvasPlugin extends PluginBaseClass {
 
         const canvas = this.el;
 
-        const width = canvas.parentNode.clientWidth;
-        const height = canvas.parentNode.clientHeight;
+        const width = Math.max(250, canvas.parentNode.clientWidth);
+        const height = Math.max(100, canvas.parentNode.clientHeight);
         const ratio = window.devicePixelRatio;
 
         canvas.width = width * ratio;

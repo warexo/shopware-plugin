@@ -4,12 +4,18 @@
       "commerce": {
         "product-options": {
           "label": "Warexo Produkt Optionen"
+        },
+        "gpsr-info": {
+          "label": "GPSR Informationen"
         }
       }
     },
     "elements": {
       "product-options": {
         "label": "Warexo Produkt Optionen"
+      },
+      "gpsr-info": {
+        "label": "GPSR Informationen"
       }
     }
   },
