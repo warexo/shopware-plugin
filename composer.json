@@ -10,6 +10,7 @@
     }
   },
   "require": {
+    "aggrosoft/shopware-plugin-core": "~3.0.0",
     "shopware/core": "~6.6.0"
   },
   "extra": {

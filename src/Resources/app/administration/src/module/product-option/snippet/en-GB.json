@@ -1,0 +1,92 @@
+{
+  "aggro-surcharge": {
+    "general": {
+      "mainMenuItemGeneral": "Aufschläge",
+      "descriptionTextModule": "Automatische Zusatzartikel nach Regeln für den Warenkorb"
+    },
+    "list": {
+      "header": "Aufschläge",
+      "add": "Aufschlag hinzufügen",
+      "columnName": "Name",
+      "columnActive": "Aktiv"
+    },
+    "detail": {
+      "basics": {
+        "title": "Stammdaten",
+        "cards": {
+          "general": {
+            "title": "Allgemein",
+            "active": {
+              "label": "Aktiv"
+            },
+            "removable": {
+              "label": "Entfernbar"
+            },
+            "name": {
+              "label": "Interner Name",
+              "placeholder": "Bezeichung des Aufschlags"
+            },
+            "priority": {
+              "label": "Priorität",
+              "helpText": "Je höher die Priorität, desto früher wird der Aufschlag angewendet."
+            }
+          },
+          "rules":{
+            "title": "Regeln",
+            "rule": {
+              "label": "Regel"
+            },
+            "salesChannels": {
+              "label": "Verkaufskanäle"
+            }
+          }
+        }
+      },
+      "product": {
+        "title": "Produkt",
+        "cards": {
+          "product-selection": {
+            "title": "Produkt",
+            "product": {
+              "label": "Produkt"
+            },
+            "free": {
+              "label": "Gratis Produkt"
+            },
+            "shippingCostAware": {
+              "label": "Versandkosten Relevant"
+            }
+          }
+        }
+      },
+      "quantities": {
+        "title": "Mengen",
+        "cards": {
+          "quantities": {
+            "title": "Mengen",
+            "quantityMode": {
+              "label": "Mengenmodus",
+              "fixed": "Fixiert",
+              "position": "Position",
+              "quantity": "Menge",
+              "unit": "Einheit",
+              "warexo_material": "Warexo Material"
+            },
+            "fixQuantity": {
+              "label": "Menge"
+            },
+            "products": {
+              "label": "Produkte"
+            },
+            "productStreams": {
+              "label": "Dynamische Produktgruppen"
+            },
+            "tags": {
+              "label": "Tags"
+            }
+          }
+        }
+      }
+    }
+  }
+}
