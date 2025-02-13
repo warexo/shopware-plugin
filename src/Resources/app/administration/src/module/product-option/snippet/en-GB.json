@@ -1,88 +1,68 @@
 {
-  "aggro-surcharge": {
-    "general": {
-      "mainMenuItemGeneral": "Aufschläge",
-      "descriptionTextModule": "Automatische Zusatzartikel nach Regeln für den Warenkorb"
-    },
-    "list": {
-      "header": "Aufschläge",
-      "add": "Aufschlag hinzufügen",
-      "columnName": "Name",
-      "columnActive": "Aktiv"
-    },
-    "detail": {
-      "basics": {
-        "title": "Stammdaten",
-        "cards": {
-          "general": {
-            "title": "Allgemein",
-            "active": {
-              "label": "Aktiv"
+  "warexo": {
+    "product-option": {
+      "mainMenuItemGeneral": "Auswahllisten",
+      "descriptionTextModule": "Auswahllisten",
+      "list": {
+        "header": "Auswahllisten",
+        "add": "Auswahlliste hinzufügen",
+        "columnName": "Name",
+        "columnIdent": "Ident",
+        "columnPosition": "Position"
+      },
+      "detail": {
+        "basics": {
+          "title": "Allgemein",
+          "cards": {
+            "general": {
+              "title": "Allgemeine Informationen",
+              "ident": {
+                "label": "Ident",
+                "placeholder": "Technischer Name"
+              },
+              "name": {
+                "label": "Name",
+                "placeholder": "Bezeichung der Auswahlliste"
+              },
+              "position": {
+                "label": "Position",
+                "helpText": "Auswahllisten werden nach Position sortiert."
+              },
+              "displayType": {
+                "label": "Anzeige Art",
+                "fixed": "Text",
+                "select": "Dropdown",
+                "color": "Farbe/Bild"
+              }
             },
-            "removable": {
-              "label": "Entfernbar"
-            },
-            "name": {
-              "label": "Interner Name",
-              "placeholder": "Bezeichung des Aufschlags"
-            },
-            "priority": {
-              "label": "Priorität",
-              "helpText": "Je höher die Priorität, desto früher wird der Aufschlag angewendet."
-            }
-          },
-          "rules":{
-            "title": "Regeln",
-            "rule": {
-              "label": "Regel"
-            },
-            "salesChannels": {
-              "label": "Verkaufskanäle"
+            "description": {
+              "title": "Beschreibung"
             }
           }
-        }
-      },
-      "product": {
-        "title": "Produkt",
-        "cards": {
-          "product-selection": {
-            "title": "Produkt",
-            "product": {
-              "label": "Produkt"
-            },
-            "free": {
-              "label": "Gratis Produkt"
-            },
-            "shippingCostAware": {
-              "label": "Versandkosten Relevant"
-            }
-          }
-        }
-      },
-      "quantities": {
-        "title": "Mengen",
-        "cards": {
-          "quantities": {
-            "title": "Mengen",
-            "quantityMode": {
-              "label": "Mengenmodus",
-              "fixed": "Fixiert",
-              "position": "Position",
-              "quantity": "Menge",
-              "unit": "Einheit",
-              "warexo_material": "Warexo Material"
-            },
-            "fixQuantity": {
-              "label": "Menge"
-            },
-            "products": {
-              "label": "Produkte"
-            },
-            "productStreams": {
-              "label": "Dynamische Produktgruppen"
-            },
-            "tags": {
-              "label": "Tags"
+        },
+        "options": {
+          "title": "Optionen",
+          "cards": {
+            "options": {
+              "title": "Optionen",
+              "columnName": "Name",
+              "columnPosition": "Position",
+              "columnColor": "Farbwert",
+              "name": {
+                "label": "Name"
+              },
+              "position": {
+                "label": "Position"
+              },
+              "color": {
+                "label": "Farbwert"
+              },
+              "media": {
+                "label": "Bild"
+              },
+              "description": {
+                "label": "Beschreibung"
+              }
             }
           }
         }

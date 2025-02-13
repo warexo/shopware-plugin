@@ -9,9 +9,15 @@ export default [
         primary: true,
     },
     {
+        property: 'ident',
+        allowResize: true,
+        label: 'warexo.product-option.list.columnIdent',
+        inlineEdit: 'string'
+    },
+    {
         property: 'position',
         allowResize: true,
-        label: 'warexo.product-option.list.columnActive',
+        label: 'warexo.product-option.list.columnPosition',
         inlineEdit: 'int'
     }
 ]
