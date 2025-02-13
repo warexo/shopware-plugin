@@ -1,0 +1,11 @@
+{
+  "main.js": {
+    "file": "assets/aggro-warexo-plugin-Ca_E_NTC.js",
+    "name": "aggro-warexo-plugin",
+    "src": "main.js",
+    "isEntry": true,
+    "css": [
+      "assets/aggro-warexo-plugin-MY0o2A5b.css"
+    ]
+  }
+}
