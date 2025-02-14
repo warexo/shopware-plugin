@@ -44,11 +44,11 @@ class WarexoProductOptionDefinition extends EntityDefinition
     protected function defineFields(): FieldCollection
     {
         return new FieldCollection([
-            (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
-            (new StringField('display_type', 'displayType')),
-            (new IntField('position', 'position')),
-            (new StringField('ident', 'ident')),
-            (new OneToManyAssociationField('productOptionValues', WarexoProductOptionValueDefinition::class, 'warexo_product_option_id')),
+            (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey(), new ApiAware()),
+            (new StringField('display_type', 'displayType'))->addFlags(new ApiAware()),
+            (new IntField('position', 'position'))->addFlags(new ApiAware()),
+            (new StringField('ident', 'ident'))->addFlags(new ApiAware()),
+            (new OneToManyAssociationField('productOptionValues', WarexoProductOptionValueDefinition::class, 'warexo_product_option_id'))->addFlags(new ApiAware()),
             (new TranslatedField('name'))->addFlags(new ApiAware(), new Required()),
             (new TranslatedField('description'))->addFlags(new ApiAware()),
             (new TranslationsAssociationField(
@@ -61,7 +61,7 @@ class WarexoProductOptionDefinition extends EntityDefinition
                 WarexoProductProductOptionDefinition::class,
                 'warexo_product_option_id',
                 'product_id'
-            ))->addFlags(new CascadeDelete(), new ReverseInherited('warexoProductOptions')),
+            ))->addFlags(new CascadeDelete(), new ReverseInherited('warexoProductOptions'), new ApiAware()),
         ]);
     }
 }

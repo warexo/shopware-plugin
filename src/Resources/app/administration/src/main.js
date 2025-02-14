@@ -1,5 +1,7 @@
 import './sw-cms-detail-override'
 import './sw-property-detail-base-override'
+import './sw-product-detail-override'
+import './sw-product-category-form-override'
 
 import './sw-cms/blocks/commerce/product-options'
 import './sw-cms/blocks/commerce/gpsr-info'

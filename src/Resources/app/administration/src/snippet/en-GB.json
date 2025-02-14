@@ -26,5 +26,10 @@
         "customWarexoPropertyTypeVariantName": "Es handelt sich hierbei um einen aus Warexo importierten Namen der Auswahl einer Variante"
       }
     }
+  },
+  "sw-product": {
+    "warexoProductOptions": {
+      "labelWarexoProductOptions": "Auswahllisten"
+    }
   }
 }

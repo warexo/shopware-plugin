@@ -25,7 +25,7 @@ class ProductExtension extends EntityExtension
                 WarexoProductProductOptionDefinition::class,
                 'product_id',
                 'warexo_product_option_id'
-            ))->addFlags(new Inherited())
+            ))->addFlags(new Inherited(), new ApiAware())
         );
 
         $collection->add(

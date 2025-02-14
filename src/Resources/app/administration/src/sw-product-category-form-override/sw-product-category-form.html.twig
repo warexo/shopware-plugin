@@ -1,0 +1,38 @@
+{% block sw_product_category_form_tags_field %}
+
+    <sw-inherit-wrapper
+            v-model:value="product.extensions.warexoProductOptions"
+            :has-parent="!!parentProduct.id"
+            class="sw-product-category-form__warexoProductOptions_field"
+            :inherited-value="parentProduct.extensions?.warexoProductOptions"
+            :label="$tc('sw-product.warexoProductOptions.labelWarexoProductOptions')"
+            is-association
+    >
+        <template #content="{ currentValue, isInherited, updateCurrentValue }">
+            <sw-entity-multi-select
+                    v-if="!loading.product && !loading.parentProduct && multiSelectVisible"
+                    :key="isInherited"
+                    class="sw-product-detail__select-visibility"
+                    :entity-collection="currentValue"
+                    :placeholder="$tc('sw-product.warexoProductOptions.placeholderWarexoProductOptions')"
+                    :disabled="isInherited || !allowEdit"
+                    @update:entity-collection="updateCurrentValue"
+            >
+                <slot
+                        name="result-label-property"
+                        v-bind="{ item, index, labelProperty, valueProperty: 'id' }"
+                >
+                    {{ item.translated.name }} ({{ item.ident }})
+                </slot>
+                <slot
+                        name="selection-label-property"
+                        v-bind="{ item, index, labelProperty, valueProperty }"
+                >
+                    {{ item.translated.name }} ({{ item.ident }})
+                </slot>
+            </sw-entity-multi-select>
+        </template>
+    </sw-inherit-wrapper>
+
+    {% parent %}
+{% endblock %}
