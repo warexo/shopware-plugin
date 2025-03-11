@@ -7,6 +7,6 @@ jobs:
     with:
       extensionName: 'AggroWarexoPlugin'
       shopwareVersion: '6.6.0'
-      cliVersion: '0.4.29'
+      cliVersion: 'latest'
     secrets:
       ghToken: ${{ secrets.GH_TOKEN }}
