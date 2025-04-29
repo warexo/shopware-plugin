@@ -55,7 +55,7 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
                             'value' => $value->getName(),
                             'surcharge' => $value->getSurcharge()
                         ];
-                    }else {
+                    }/*else {
                         $criteria = new Criteria();
                         $criteria->addFilter(new EqualsFilter('productOptionId', $option->getId()));
                         $criteria->addSorting(new FieldSorting('position'));
@@ -65,7 +65,7 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
                             'value' => $value->getName(),
                             'surcharge' => $value->getSurcharge()
                         ];
-                    }
+                    }*/
                 }
                 $selections[$lineItem->getId()] = $lineSelection;
             }
