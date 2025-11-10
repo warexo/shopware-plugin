@@ -57,9 +57,6 @@
         </service>
 
         <!-- event listeners -->
-        <service id="Warexo\Subscriber\KernelControllerSubscriber">
-            <tag name="kernel.event_subscriber" priority="0"/>
-        </service>
         <service id="Warexo\Subscriber\ProductPageCriteriaSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>

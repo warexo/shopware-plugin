@@ -1,5 +1,5 @@
 build:
-  shopwareVersionConstraint: '6.6.10.0'
+  shopwareVersionConstraint: '6.7.10.0'
   zip:
     assets:
       enabled: true

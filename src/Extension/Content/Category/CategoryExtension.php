@@ -20,4 +20,9 @@ class CategoryExtension extends EntityExtension
     {
         return CategoryDefinition::class;
     }
+
+    public function getEntityName(): string
+    {
+        return CategoryDefinition::ENTITY_NAME;
+    }
 }

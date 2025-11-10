@@ -16,7 +16,7 @@ Component.register('sw-cms-el-gpsr-info', {
 
     methods: {
         createdComponent() {
-            this.$set(this.element, 'locked', true);
+            //this.$set(this.element, 'locked', true);
             this.initElementConfig('gpsr-info');
             /*this.initElementConfig('product-options');
             this.initElementData('product-options');

@@ -67,7 +67,9 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
                         ];
                     }*/
                 }
-                $selections[$lineItem->getId()] = $lineSelection;
+                if (count($lineSelection)){
+                    $selections[$lineItem->getId()] = $lineSelection;
+                }
             }
         }
         $data->set('optionValueSelections', $selections);

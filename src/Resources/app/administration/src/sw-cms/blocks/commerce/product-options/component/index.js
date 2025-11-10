@@ -1,7 +1,7 @@
 import template from './sw-cms-block-product-options.html.twig';
 import './sw-cms-block-product-options.scss';
 
-const { Component, State } = Shopware;
+const { Component, State, Store } = Shopware;
 
 /**
  * @private since v6.5.0
@@ -12,7 +12,7 @@ Component.register('sw-cms-block-product-options', {
 
     computed: {
         currentDeviceView() {
-            return State.get('cmsPageState').currentCmsDeviceView;
+            return Store.get('cmsPage').currentCmsDeviceView;
         },
 
         currentDeviceViewClass() {
