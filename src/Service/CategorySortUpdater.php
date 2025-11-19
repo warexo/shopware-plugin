@@ -140,7 +140,7 @@ class CategorySortUpdater extends TreeUpdater
         $escaped = EntityDefinitionQueryHelper::escape($definition->getEntityName());
         $query->from($escaped);
 
-        $query->select($this->getFieldsToSelect($definition));
+        $query->select(...$this->getFieldsToSelect($definition));
         if ($parent === []) {
             $query->andWhere('parent_id is null');
         }else{
@@ -192,7 +192,7 @@ class CategorySortUpdater extends TreeUpdater
 
         $query->from($escaped);
 
-        $query->select($this->getFieldsToSelect($definition));
+        $query->select(...$this->getFieldsToSelect($definition));
         $query->andWhere('id = :id');
         $query->setParameter('id', $id);
 
@@ -206,11 +206,11 @@ class CategorySortUpdater extends TreeUpdater
 
         $query->from($escaped);
 
-        $query->select(['id', 'category_id', 'position']);
+        $query->select('id', 'category_id', 'position');
         $query->andWhere('category_id = :id');
         $query->setParameter('id', $id);
 
         return $query->execute()->fetch();
     }
 
- }
+}
