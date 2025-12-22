@@ -1,0 +1,11 @@
+{
+  "main.js": {
+    "file": "js/aggro-warexo-plugin.js",
+    "name": "aggro-warexo-plugin",
+    "src": "main.js",
+    "isEntry": true,
+    "css": [
+      "css/aggro-warexo-plugin.css"
+    ]
+  }
+}
