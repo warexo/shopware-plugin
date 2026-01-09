@@ -85,7 +85,7 @@ class CategorySortUpdater extends TreeUpdater
                 if ($extension['position'] !== $position) {
                     $sql = 'UPDATE warexo_category_extension SET position = :position, updated_at = :updated_at WHERE id = :id';
                     $statement = $this->connection->prepare($sql);
-                    $statement->execute([
+                    $statement->executeQuery([
                         'position' => $position,
                         'id' => $extension['id'],
                         'updated_at' => (new \DateTime())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
@@ -94,7 +94,7 @@ class CategorySortUpdater extends TreeUpdater
             }else{
                 $sql = 'INSERT INTO warexo_category_extension (id, category_id, position, created_at, updated_at) VALUES (:id, :category_id, :position, :created_at, :updated_at)';
                 $statement = $this->connection->prepare($sql);
-                $statement->execute([
+                $statement->executeQuery([
                     'id' => Uuid::randomBytes(),
                     'category_id' => $child['id'],
                     'position' => $position,
@@ -149,7 +149,7 @@ class CategorySortUpdater extends TreeUpdater
             $this->makeQueryVersionAware($definition, Uuid::fromHexToBytes($context->getVersionId()), $query);
         }
 
-        return $query->execute()->fetchAll();
+        return $query->executeQuery()->fetchAllAssociative();
     }
 
     private function makeQueryVersionAware(EntityDefinition $definition, string $versionId, QueryBuilder $query): void
@@ -176,7 +176,7 @@ class CategorySortUpdater extends TreeUpdater
         $query = $this->getEntityByIdQuery($entity, $definition);
         $this->makeQueryVersionAware($definition, $versionId, $query);
 
-        $result = $query->execute()->fetch();
+        $result = $query->executeQuery()->fetchAssociative();
 
         if ($result === false) {
             return [];
@@ -210,7 +210,7 @@ class CategorySortUpdater extends TreeUpdater
         $query->andWhere('category_id = :id');
         $query->setParameter('id', $id);
 
-        return $query->execute()->fetch();
+        return $query->executeQuery()->fetchAssociative();
     }
 
 }

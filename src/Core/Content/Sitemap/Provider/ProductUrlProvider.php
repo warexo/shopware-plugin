@@ -140,7 +140,7 @@ class ProductUrlProvider extends AbstractUrlProvider
         $query->setParameter('versionId', Uuid::fromHexToBytes(Defaults::LIVE_VERSION));
         $query->setParameter('salesChannelId', Uuid::fromHexToBytes($context->getSalesChannelId()));
 
-        $products = $query->execute()->fetchAllAssociative();
+        $products = $query->executeQuery()->fetchAllAssociative();
 
         $filtered = $this->filterForeignCanonicalProducts($products, $context);
 
