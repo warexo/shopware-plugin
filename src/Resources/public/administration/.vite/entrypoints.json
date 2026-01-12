@@ -1,0 +1,25 @@
+{
+  "base": "/bundles/aggrowarexoplugin/administration/",
+  "entryPoints": {
+    "aggro-warexo-plugin": {
+      "css": [
+        "/bundles/aggrowarexoplugin/administration/assets/aggro-warexo-plugin-MY0o2A5b.css"
+      ],
+      "dynamic": [],
+      "js": [
+        "/bundles/aggrowarexoplugin/administration/assets/aggro-warexo-plugin-BJpZYgCp.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}
