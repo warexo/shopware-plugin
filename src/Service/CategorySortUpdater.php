@@ -84,8 +84,7 @@ class CategorySortUpdater extends TreeUpdater
             if ($extension) {
                 if ($extension['position'] !== $position) {
                     $sql = 'UPDATE warexo_category_extension SET position = :position, updated_at = :updated_at WHERE id = :id';
-                    $statement = $this->connection->prepare($sql);
-                    $statement->executeQuery([
+                    $this->connection->executeStatement($sql, [
                         'position' => $position,
                         'id' => $extension['id'],
                         'updated_at' => (new \DateTime())->format(Defaults::STORAGE_DATE_TIME_FORMAT),
@@ -93,8 +92,7 @@ class CategorySortUpdater extends TreeUpdater
                 }
             }else{
                 $sql = 'INSERT INTO warexo_category_extension (id, category_id, position, created_at, updated_at) VALUES (:id, :category_id, :position, :created_at, :updated_at)';
-                $statement = $this->connection->prepare($sql);
-                $statement->executeQuery([
+                $this->connection->executeStatement($sql,[
                     'id' => Uuid::randomBytes(),
                     'category_id' => $child['id'],
                     'position' => $position,
