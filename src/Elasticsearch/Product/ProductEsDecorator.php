@@ -2,6 +2,7 @@
 
 namespace Warexo\Elasticsearch\Product;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use OpenSearchDSL\Query\Compound\BoolQuery;
 use Shopware\Core\Framework\Context;
@@ -87,7 +88,7 @@ class ProductEsDecorator extends AbstractElasticsearchDefinition
                 'ids' => $ids,
             ],
             [
-                'ids' => Connection::PARAM_STR_ARRAY
+                'ids' => ArrayParameterType::STRING,
             ]
         );
     }

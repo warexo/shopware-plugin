@@ -51,7 +51,7 @@ class ProductWrittenSubscriber implements EventSubscriberInterface
         $this->connection->executeStatement(
             'UPDATE product SET available_stock = stock WHERE id IN (:ids)',
             ['ids' => Uuid::fromHexToBytesList($ids)],
-            ['ids' => Connection::PARAM_STR_ARRAY]
+            ['ids' =>  ArrayParameterType::STRING]
         );
 
         $this->updateAvailableFlag($ids, $event->getContext());
