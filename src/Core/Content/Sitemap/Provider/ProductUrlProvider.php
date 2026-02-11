@@ -178,9 +178,9 @@ class ProductUrlProvider extends AbstractUrlProvider
         $productIds = array_column($products, 'id');
 
         $query = $this->connection->createQueryBuilder();
-        $query->select([
+        $query->select(
             'product.id as id'
-        ]);
+        );
         $query->from('main_category');
         $query->leftJoin('main_category', 'product', 'product', 'product.id = main_category.product_id OR product.parent_id = main_category.product_id');
         $query->leftJoin('main_category', 'category_translation', 'category_translation', 'category_translation.category_id = main_category.category_id');
