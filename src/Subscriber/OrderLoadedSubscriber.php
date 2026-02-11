@@ -43,7 +43,11 @@ class OrderLoadedSubscriber implements EventSubscriberInterface
         foreach ($event->getEntities() as $order) {
             if (isset($magnaData[$order->get('id')])) {
                 $customFields = $order->getCustomFields() ?? [];
-                $customFields['magnaLister'] = $magnaData[$order->get('id')];
+                if ($magnaData['platform'] === 'amazon') {
+                    $customFields['amazonorderid'] = $magnaData[$order->get('id')]['order_id'];
+                }else if($magnaData['platform'] === 'ebay') {
+                    $customFields['ebayorderid'] = $magnaData[$order->get('id')]['order_id'];
+                }
                 $order->setCustomFields($customFields);
             }
         }
