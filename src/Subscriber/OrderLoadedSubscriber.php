@@ -35,7 +35,7 @@ class OrderLoadedSubscriber implements EventSubscriberInterface
 
         $orderIds = $event->getIds();
         $magnaData = $this->connection->fetchAllAssociativeIndexed(
-            'SELECT `current_orders_id` as id, `special` as order_id, `platform` FROM `magnalister_orders` WHERE `current_orders_id` IN (:orderIds)',
+            'SELECT `current_orders_id` as id, `special` as order_id, `platform`, `data` as details FROM `magnalister_orders` WHERE `current_orders_id` IN (:orderIds)',
             ['orderIds' => $orderIds],
             ['orderIds' => ArrayParameterType::STRING]
         );
@@ -43,9 +43,11 @@ class OrderLoadedSubscriber implements EventSubscriberInterface
         /** @var OrderEntity $order */
         foreach ($event->getEntities() as $order) {
             if (isset($magnaData[$order->get('id')])) {
+                $magnaDetails = json_decode($magnaData[$order->get('id')]['details'], true);
                 $customFields = $order->getCustomFields() ?? [];
                 if ($magnaData[$order->get('id')]['platform'] === 'amazon') {
                     $customFields['amazonorderid'] = $magnaData[$order->get('id')]['order_id'];
+                    $customFields['amazonshipservicelevel'] = $magnaDetails['ShipServiceLevel'];
                 }else if($magnaData[$order->get('id')]['platform'] === 'ebay') {
                     $customFields['ebayorderid'] = $magnaData[$order->get('id')]['order_id'];
                 }
