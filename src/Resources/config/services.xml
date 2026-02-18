@@ -54,6 +54,7 @@
         <service id="Warexo\Elasticsearch\Product\ProductEsDecorator" decorates="Shopware\Elasticsearch\Product\ElasticsearchProductDefinition">
             <argument type="service" id="Warexo\Elasticsearch\Product\ProductEsDecorator.inner"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Elasticsearch\Product\AbstractProductSearchQueryBuilder"/>
         </service>
 
         <!-- event listeners -->

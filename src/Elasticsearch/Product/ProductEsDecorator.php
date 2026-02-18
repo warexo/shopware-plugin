@@ -4,21 +4,22 @@ namespace Warexo\Elasticsearch\Product;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use OpenSearchDSL\BuilderInterface;
 use OpenSearchDSL\Query\Compound\BoolQuery;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Elasticsearch\Framework\AbstractElasticsearchDefinition;
+use Shopware\Elasticsearch\Product\AbstractProductSearchQueryBuilder;
 
 class ProductEsDecorator extends AbstractElasticsearchDefinition
 {
-    private AbstractElasticsearchDefinition $productDefinition;
-    private Connection $connection;
-
-    public function __construct(AbstractElasticsearchDefinition $productDefinition, Connection $connection)
+    public function __construct(
+        private readonly AbstractElasticsearchDefinition $productDefinition,
+        private readonly Connection $connection,
+        private readonly AbstractProductSearchQueryBuilder $searchQueryBuilder
+    )
     {
-        $this->productDefinition = $productDefinition;
-        $this->connection = $connection;
     }
 
     public function getEntityDefinition(): EntityDefinition
@@ -26,9 +27,9 @@ class ProductEsDecorator extends AbstractElasticsearchDefinition
         return $this->productDefinition->getEntityDefinition();
     }
 
-    public function buildTermQuery(Context $context, Criteria $criteria): BoolQuery
+    public function buildTermQuery(Context $context, Criteria $criteria): BuilderInterface
     {
-        return $this->productDefinition->buildTermQuery($context, $criteria);
+        return $this->searchQueryBuilder->build($criteria, $context);
     }
 
     /**
