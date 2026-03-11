@@ -86,6 +86,10 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="Warexo\Subscriber\NavigationLoadedSubscriber">
+            <argument type="service" id="media.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
 
         <!-- entity extensions -->
         <service id="Warexo\Extension\Content\Category\CategoryExtension">
