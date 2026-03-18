@@ -54,4 +54,44 @@ class ProductExtensionEntity extends Entity
     {
         $this->position = $position;
     }
+
+    public function getStock(): float
+    {
+        return $this->stock;
+    }
+
+    public function setStock(float $stock): void
+    {
+        $this->stock = $stock;
+    }
+
+    public function getMinPurchase(): float
+    {
+        return $this->minPurchase;
+    }
+
+    public function setMinPurchase(float $minPurchase): void
+    {
+        $this->minPurchase = $minPurchase;
+    }
+
+    public function getMaxPurchase(): float
+    {
+        return $this->maxPurchase;
+    }
+
+    public function setMaxPurchase(float $maxPurchase): void
+    {
+        $this->maxPurchase = $maxPurchase;
+    }
+
+    public function getPurchaseSteps(): float
+    {
+        return $this->purchaseSteps;
+    }
+
+    public function setPurchaseSteps(float $purchaseSteps): void
+    {
+        $this->purchaseSteps = $purchaseSteps;
+    }
 }

@@ -8,6 +8,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\ApiAware;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\FkField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\FloatField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\OneToOneAssociationField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IntField;
@@ -33,6 +34,10 @@ class ProductExtensionDefinition extends EntityDefinition
             (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
             new FkField('product_id', 'productId', ProductDefinition::class),
             (new IntField('position', 'position'))->addFlags(new ApiAware()),
+            (new FloatField('stock', 'stock'))->addFlags(new ApiAware()),
+            (new FloatField('minPurchase', 'minPurchase'))->addFlags(new ApiAware()),
+            (new FloatField('maxPurchase', 'maxPurchase'))->addFlags(new ApiAware()),
+            (new FloatField('purchaseSteps', 'purchaseSteps'))->addFlags(new ApiAware()),
 
             new OneToOneAssociationField('product', 'product_id', 'id', ProductDefinition::class, false)
         ]);
