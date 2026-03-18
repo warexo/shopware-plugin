@@ -35,9 +35,9 @@ class ProductExtensionDefinition extends EntityDefinition
             new FkField('product_id', 'productId', ProductDefinition::class),
             (new IntField('position', 'position'))->addFlags(new ApiAware()),
             (new FloatField('stock', 'stock'))->addFlags(new ApiAware()),
-            (new FloatField('minPurchase', 'minPurchase'))->addFlags(new ApiAware()),
-            (new FloatField('maxPurchase', 'maxPurchase'))->addFlags(new ApiAware()),
-            (new FloatField('purchaseSteps', 'purchaseSteps'))->addFlags(new ApiAware()),
+            (new FloatField('min_purchase', 'minPurchase'))->addFlags(new ApiAware()),
+            (new FloatField('max_purchase', 'maxPurchase'))->addFlags(new ApiAware()),
+            (new FloatField('purchase_steps', 'purchaseSteps'))->addFlags(new ApiAware()),
 
             new OneToOneAssociationField('product', 'product_id', 'id', ProductDefinition::class, false)
         ]);
