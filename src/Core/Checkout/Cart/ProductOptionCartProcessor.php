@@ -67,6 +67,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
             }
 
             $businessUnitPrice = $this->resolveBusinessUnitPrice($data, $lineItem, $price->getUnitPrice());
+            $normalizedUnitPrice = $businessUnitPrice;
             $basePrice = $isDecimalQuantity
                 ? $this->quantityMapper->toCoreUnitPrice($businessUnitPrice)
                 : $businessUnitPrice;
@@ -81,6 +82,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
                 $surchargePrice = (float) $selectionSurcharge['price'];
                 if ($selectionSurcharge['type'] === '%') {
                     $surcharge += $basePrice * ($surchargePrice / 100);
+                    $normalizedUnitPrice += $businessUnitPrice * ($surchargePrice / 100);
 
                     continue;
                 }
@@ -88,6 +90,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
                 $surcharge += $isDecimalQuantity
                     ? $this->quantityMapper->toCoreUnitPrice($surchargePrice)
                     : $surchargePrice;
+                $normalizedUnitPrice += $surchargePrice;
             }
 
             if (!$isDecimalQuantity && $surcharge === 0.0) {
@@ -123,7 +126,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
 
             $calculated = $this->calculator->calculate($definition, $context);
             if ($isDecimalQuantity) {
-                $calculated = $this->normalizeCalculatedPrice($lineItem, $calculated);
+                $calculated = $this->normalizeCalculatedPrice($lineItem, $calculated, $normalizedUnitPrice);
             }
 
             $lineItem->setPrice($calculated);
@@ -156,14 +159,13 @@ class ProductOptionCartProcessor implements CartProcessorInterface
         return $calculatedPrice->getUnitPrice();
     }
 
-    private function normalizeCalculatedPrice(LineItem $lineItem, CalculatedPrice $price): CalculatedPrice
+    private function normalizeCalculatedPrice(LineItem $lineItem, CalculatedPrice $price, float $normalizedUnitPrice): CalculatedPrice
     {
         $decimalQuantity = $lineItem->getPayloadValue('warexoDecimalQuantity');
         if (!is_float($decimalQuantity) && !is_int($decimalQuantity)) {
             $decimalQuantity = $this->quantityMapper->fromCoreQuantity($lineItem->getQuantity());
         }
 
-        $normalizedUnitPrice = $this->quantityMapper->fromCoreUnitPrice($price->getUnitPrice());
         $normalizedTotalPrice = round($normalizedUnitPrice * (float) $decimalQuantity, DecimalQuantityMapper::SCALE + 2);
         $taxFactor = $price->getTotalPrice() !== 0.0 ? $normalizedTotalPrice / $price->getTotalPrice() : 1.0;
 
