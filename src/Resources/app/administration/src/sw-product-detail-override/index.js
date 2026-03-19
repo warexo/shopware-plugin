@@ -4,6 +4,7 @@ Shopware.Component.override('sw-product-detail', {
             const criteria = this.$super('productCriteria');
 
             criteria.addAssociation('warexoProductOptions');
+            criteria.addAssociation('warexoExtension');
 
             return criteria;
         }

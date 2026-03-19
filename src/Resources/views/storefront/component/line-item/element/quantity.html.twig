@@ -1,0 +1,64 @@
+{% sw_extends '@Storefront/storefront/component/line-item/element/quantity.html.twig' %}
+
+{% set warexoDecimalQuantityEnabled = config('AggroWarexoPlugin.config.decimalstock') and lineItem.payload.warexoIsDecimalQuantity is defined and lineItem.payload.warexoIsDecimalQuantity %}
+{% set warexoDisplayedQuantity = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalQuantity is defined ? lineItem.payload.warexoDecimalQuantity|number_format(3, '.', '') : lineItem.quantity %}
+{% set warexoDisplayedMinPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMinPurchase is defined and lineItem.payload.warexoDecimalMinPurchase is not null ? lineItem.payload.warexoDecimalMinPurchase|number_format(3, '.', '') : quantityInformation.minPurchase %}
+{% set warexoDisplayedPurchaseSteps = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalPurchaseSteps is defined and lineItem.payload.warexoDecimalPurchaseSteps is not null ? lineItem.payload.warexoDecimalPurchaseSteps|number_format(3, '.', '') : quantityInformation.purchaseSteps %}
+{% set warexoDisplayedMaxPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMaxPurchase is defined and lineItem.payload.warexoDecimalMaxPurchase is not null ? lineItem.payload.warexoDecimalMaxPurchase|number_format(3, '.', '') : maxQuantity %}
+
+{% block component_line_item_quantity_select_input %}
+    <legend class="form-label visually-hidden">
+        {{ 'component.product.quantitySelect.legend'|trans|striptags }}
+    </legend>
+
+    {% set quantitySelectorOptions = {
+        ariaLiveUpdateMode: 'onload',
+    } %}
+    <div
+        id="line-item-quantity-group-{{ lineItem.id }}"
+        class="input-group line-item-quantity-group quantity-selector-group"
+        data-quantity-selector="true"
+        data-quantity-selector-options="{{ quantitySelectorOptions|json_encode }}"
+    >
+        <button
+            {% if isDigital %}disabled="disabled"{% endif %}
+            type="button"
+            class="btn btn-outline-light btn-minus js-btn-minus"
+            aria-label="{{ 'component.product.quantitySelect.decreaseOfProduct'|trans({ '%product%': lineItem.label })|striptags }}"
+            data-focus-id="line-item-{{ displayMode }}-quantity-down-{{ lineItem.id }}"
+        >
+            {% sw_icon 'minus' style {size: 'xs'} %}
+        </button>
+        <input
+            {% if isDigital %}disabled="disabled"{% endif %}
+            type="number"
+            name="quantity"
+            class="form-control js-quantity-selector quantity-selector-group-input quantity-input-{{ lineItem.id }} {% if displayMode === 'offcanvas' %} js-offcanvas-cart-change-quantity-number{% endif %}"
+            min="{{ warexoDisplayedMinPurchase }}"
+            {% if warexoDisplayedMaxPurchase is not null %}max="{{ warexoDisplayedMaxPurchase }}"{% endif %}
+            step="{{ warexoDisplayedPurchaseSteps }}"
+            value="{{ warexoDisplayedQuantity }}"
+            aria-label="{{ 'component.product.quantitySelect.labelWithProduct'|trans({ '%product%': lineItem.label })|striptags }}"
+            data-focus-id="line-item-{{ displayMode }}-quantity-{{ lineItem.id }}"
+        />
+        <button
+            {% if isDigital %}disabled="disabled"{% endif %}
+            type="button"
+            class="btn btn-outline-light btn-plus js-btn-plus"
+            aria-label="{{ 'component.product.quantitySelect.increaseOfProduct'|trans({ '%product%': lineItem.label })|striptags }}"
+            data-focus-id="line-item-{{ displayMode }}-quantity-up-{{ lineItem.id }}"
+        >
+            {% sw_icon 'plus' style {size: 'xs'} %}
+        </button>
+
+        {% block component_line_item_quantity_select_live_area %}
+            {{ parent() }}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+{% block component_line_item_quantity_display %}
+    <div class="d-flex justify-content-sm-center justify-content-end">
+        {{ warexoDisplayedQuantity }}
+    </div>
+{% endblock %}

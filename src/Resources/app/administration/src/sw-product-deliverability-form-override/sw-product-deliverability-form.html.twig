@@ -1,0 +1,58 @@
+{% block sw_product_deliverability_form_max_purchase_field %}
+    {% parent %}
+
+    <template v-if="warexoDecimalStockEnabled && hasWarexoExtension">
+        <mt-number-field
+            v-model="warexoExtension.stock"
+            name="sw-field--warexo-stock"
+            number-type="float"
+            :digits="3"
+            :step="0.001"
+            :min="0"
+            :disabled="!allowEdit"
+            :label="$tc('sw-product.warexoDecimalQuantity.stockLabel')"
+            :placeholder="$tc('sw-product.warexoDecimalQuantity.stockPlaceholder')"
+            :help-text="$tc('sw-product.warexoDecimalQuantity.stockHelpText')"
+        />
+
+        <mt-number-field
+            v-model="warexoExtension.minPurchase"
+            name="sw-field--warexo-min-purchase"
+            number-type="float"
+            :digits="3"
+            :step="0.001"
+            :min="0"
+            :disabled="!allowEdit"
+            :label="$tc('sw-product.warexoDecimalQuantity.minPurchaseLabel')"
+            :placeholder="$tc('sw-product.warexoDecimalQuantity.minPurchasePlaceholder')"
+            :help-text="$tc('sw-product.warexoDecimalQuantity.minPurchaseHelpText')"
+        />
+
+        <mt-number-field
+            v-model="warexoExtension.maxPurchase"
+            name="sw-field--warexo-max-purchase"
+            number-type="float"
+            :digits="3"
+            :step="0.001"
+            :min="0"
+            :allow-empty="true"
+            :disabled="!allowEdit"
+            :label="$tc('sw-product.warexoDecimalQuantity.maxPurchaseLabel')"
+            :placeholder="$tc('sw-product.warexoDecimalQuantity.maxPurchasePlaceholder')"
+            :help-text="$tc('sw-product.warexoDecimalQuantity.maxPurchaseHelpText')"
+        />
+
+        <mt-number-field
+            v-model="warexoExtension.purchaseSteps"
+            name="sw-field--warexo-purchase-steps"
+            number-type="float"
+            :digits="3"
+            :step="0.001"
+            :min="0.001"
+            :disabled="!allowEdit"
+            :label="$tc('sw-product.warexoDecimalQuantity.purchaseStepsLabel')"
+            :placeholder="$tc('sw-product.warexoDecimalQuantity.purchaseStepsPlaceholder')"
+            :help-text="$tc('sw-product.warexoDecimalQuantity.purchaseStepsHelpText')"
+        />
+    </template>
+{% endblock %}

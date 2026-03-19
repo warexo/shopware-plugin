@@ -1,8 +1,13 @@
 {% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
 
+{% set warexoDecimalQuantityEnabled = config('AggroWarexoPlugin.config.decimalstock') and product.extensions is defined and product.extensions.warexoExtension is defined and product.extensions.warexoExtension %}
+{% set warexoDecimalMinPurchase = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.minPurchase is not null ? product.extensions.warexoExtension.minPurchase|number_format(3, '.', '') : product.minPurchase %}
+{% set warexoDecimalPurchaseSteps = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.purchaseSteps is not null ? product.extensions.warexoExtension.purchaseSteps|number_format(3, '.', '') : product.purchaseSteps %}
+{% set warexoDecimalMaxPurchase = warexoDecimalQuantityEnabled ? ((product.extensions.warexoExtension.maxPurchase is not null ? product.extensions.warexoExtension.maxPurchase : (product.calculatedMaxPurchase / 1000))|number_format(3, '.', '')) : product.calculatedMaxPurchase %}
+
 {% block buy_widget_buy_container %}
     {% block buy_widget_buy_container_product_options %}
-        {% if product.extensions.warexoProductOptions|length > 0 %}
+        {% if product.extensions is defined and product.extensions.warexoProductOptions is defined and product.extensions.warexoProductOptions|length > 0 %}
             {% sw_include '@Storefront/storefront/component/buy-widget/product-options.html.twig' with {
                 productOptions: product.extensions.warexoProductOptions,
                 productId: product.id
@@ -10,5 +15,47 @@
         {% endif %}
     {% endblock %}
 
+    {{ parent() }}
+{% endblock %}
+
+{% block buy_widget_buy_quantity_input_group %}
+    <legend class="form-label visually-hidden">
+        {{ 'component.product.quantitySelect.legend'|trans|striptags }}
+    </legend>
+
+    <div id="product-detail-quantity-group-{{ product.id }}" class="input-group product-detail-quantity-group quantity-selector-group" data-quantity-selector="true">
+        <button type="button" class="btn btn-outline-light btn-minus js-btn-minus" aria-label="{{ 'component.product.quantitySelect.decrease'|trans|striptags }}">
+            {% sw_icon 'minus' style {size: 'xs'} %}
+        </button>
+        <input
+            type="number"
+            name="lineItems[{{ product.id }}][quantity]"
+            class="form-control js-quantity-selector quantity-selector-group-input"
+            min="{{ warexoDecimalMinPurchase }}"
+            max="{{ warexoDecimalMaxPurchase }}"
+            step="{{ warexoDecimalPurchaseSteps }}"
+            value="{{ warexoDecimalMinPurchase }}"
+            aria-label="{{ 'component.product.quantitySelect.label'|trans|striptags }}"
+        />
+        <button type="button" class="btn btn-outline-light btn-plus js-btn-plus" aria-label="{{ 'component.product.quantitySelect.increase'|trans|striptags }}">
+            {% sw_icon 'plus' style {size: 'xs'} %}
+        </button>
+        {% if product.translated.packUnit %}
+            <span class="input-group-text">
+                {% if warexoDecimalMinPurchase|floatval > 1 and product.translated.packUnitPlural %}
+                    {{ product.translated.packUnitPlural }}
+                {% elseif product.translated.packUnit %}
+                    {{ product.translated.packUnit }}
+                {% endif %}
+            </span>
+        {% endif %}
+
+        {% block buy_widget_buy_quantity_live_area %}
+            {{ parent() }}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+{% block buy_widget_buy_product_buy_info %}
     {{ parent() }}
 {% endblock %}

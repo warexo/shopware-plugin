@@ -28,6 +28,20 @@
     }
   },
   "sw-product": {
+    "warexoDecimalQuantity": {
+      "stockLabel": "Warexo stock",
+      "stockPlaceholder": "e.g. 12.500",
+      "stockHelpText": "Business stock value with 3 decimal places. Used only when decimal quantities are enabled.",
+      "minPurchaseLabel": "Warexo minimum purchase",
+      "minPurchasePlaceholder": "e.g. 0.125",
+      "minPurchaseHelpText": "Business minimum purchase quantity with 3 decimal places.",
+      "maxPurchaseLabel": "Warexo maximum purchase",
+      "maxPurchasePlaceholder": "e.g. 3.000",
+      "maxPurchaseHelpText": "Optional business maximum purchase quantity with 3 decimal places.",
+      "purchaseStepsLabel": "Warexo purchase steps",
+      "purchaseStepsPlaceholder": "e.g. 0.125",
+      "purchaseStepsHelpText": "Business purchase step size with 3 decimal places."
+    },
     "warexoProductOptions": {
       "labelWarexoProductOptions": "Auswahllisten"
     }

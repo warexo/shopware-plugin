@@ -21,6 +21,7 @@ class ProductPageCriteriaSubscriber implements EventSubscriberInterface
     public function onProductPageCriteria(ProductPageCriteriaEvent $event)
     {
         $criteria = $event->getCriteria();
+        $criteria->addAssociation('warexoExtension');
         $criteria->addAssociation('warexoProductOptions');
         $criteria->addAssociation('warexoProductOptions.productOptionValues');
         $criteria->addAssociation('warexoProductOptions.productOptionValues.media');

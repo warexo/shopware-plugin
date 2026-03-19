@@ -20,6 +20,21 @@
         <service id="Warexo\Core\Content\Product\DataAbstractionLayer\Indexer\CanonicalCategoryIndexer">
             <argument type="service" id="Doctrine\DBAL\Connection"/>
         </service>
+        <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+        <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+        <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityValidator"/>
+        <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityValidator"/>
+        </service>
+        <service id="Warexo\Core\Content\Product\DecimalProductMaxPurchaseCalculator" decorates="Shopware\Core\Content\Product\AbstractProductMaxPurchaseCalculator">
+            <argument type="service" id="Warexo\Core\Content\Product\DecimalProductMaxPurchaseCalculator.inner"/>
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+        </service>
 
         <!-- service extensions -->
         <service id="Warexo\Service\ProductVariationBuilderDecorator" decorates="Shopware\Core\Content\Product\ProductVariationBuilder">
@@ -54,7 +69,7 @@
         <service id="Warexo\Core\Content\Product\Stock\StockStorage" decorates="Shopware\Core\Content\Product\Stock\StockStorage">
             <argument type="service" id="Warexo\Core\Content\Product\Stock\StockStorage.inner"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
-            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
         </service>
         <service id="Warexo\Elasticsearch\Product\ProductEsDecorator" decorates="Shopware\Elasticsearch\Product\ElasticsearchProductDefinition">
             <argument type="service" id="Warexo\Elasticsearch\Product\ProductEsDecorator.inner"/>
@@ -68,6 +83,21 @@
         </service>
         <service id="Warexo\Subscriber\BeforeLineItemAddedSubscriber">
             <argument type="service" id="request_stack"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="Warexo\Subscriber\DecimalQuantityRequestSubscriber">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
+            <argument type="service" id="sales_channel.product.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="Warexo\Subscriber\CartConvertedSubscriber">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Subscriber\ProductPageLoadedSubscriber">
@@ -84,6 +114,9 @@
         <service id="Warexo\Subscriber\ProductWrittenSubscriber">
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityValidator"/>
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Subscriber\OrderLoadedSubscriber">
@@ -131,11 +164,14 @@
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartCollector">
             <argument type="service" id="product.repository"/>
             <argument type="service" id="warexo_product_option.repository"/>
-            <argument type="service" id="warexo_product_option_value.repository"/>
+            <argument type="service" id="sales_channel.product.repository"/>
             <tag name="shopware.cart.collector" priority="4901"/>
         </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
             <tag name="shopware.cart.processor" priority="4901"/>
         </service>
 

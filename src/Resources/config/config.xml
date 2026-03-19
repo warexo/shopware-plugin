@@ -6,7 +6,7 @@
         <title>Settings</title>
         <title lang="de-DE">Einstellungen</title>
         <input-field type="checkbox">
-            <name>decimal_stock</name>
+            <name>decimalstock</name>
             <label>Activate decimal numbers for stock</label>
             <label lang="de-DE">Dezimalzahlen für Lagerbestand aktivieren</label>
         </input-field>

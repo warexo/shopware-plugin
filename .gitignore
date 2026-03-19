@@ -2,3 +2,5 @@
 *.zip
 src/Resources/app/storefront/dist
 .DS_Store
+AGENT_INSTRUCTIONS.md
+.vscode

@@ -4,22 +4,20 @@ namespace Warexo\Core\Content\Product\Stock;
 
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider;
 use Shopware\Core\Content\Product\Stock\AbstractStockStorage;
-use Shopware\Core\Content\Product\Stock\StockData;
 use Shopware\Core\Content\Product\Stock\StockDataCollection;
 use Shopware\Core\Content\Product\Stock\StockLoadRequest;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\DataAbstractionLayer\Doctrine\RetryableQuery;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class StockStorage extends AbstractStockStorage
 {
     public function __construct(
         private readonly AbstractStockStorage $decorated,
         private readonly Connection $connection,
-        private readonly SystemConfigService $systemConfigService
+        private readonly DecimalQuantityFeatureDecider $featureDecider
     )
     {
     }
@@ -31,8 +29,9 @@ class StockStorage extends AbstractStockStorage
 
     public function load(StockLoadRequest $stockRequest, SalesChannelContext $context): StockDataCollection
     {
-        if (!$this->systemConfigService->get('AggroWarexoPlugin.config.decimal_stock', $context->getSalesChannelId())) {
-            return $this->decorated->load($stockRequest, $context);
+        $stockData = $this->decorated->load($stockRequest, $context);
+        if (!$this->featureDecider->isEnabled($context->getSalesChannelId())) {
+            return $stockData;
         }
 
         $productsIds = $stockRequest->productIds;
@@ -43,20 +42,18 @@ class StockStorage extends AbstractStockStorage
             ['ids' => $bytes, 'version' => Uuid::fromHexToBytes($context->getVersionId())],
             ['ids' => ArrayParameterType::BINARY]
         );
-        
 
-        return new StockDataCollection(
-            array_map(function (string $productId, array $stock) {
-                $stockData = new StockData(
-                    $productId,
-                    $stock['stock'],
-                    $stock['stock'] > 0,
-                    $stock['min_purchase'],
-                    $stock['max_purchase']
-                );
-                return $stockData;
-            }, array_keys($stocks), $stocks)
-        );
+        foreach($stockData as $productId => $data) {
+            if (!isset($stocks[$productId])) {
+                continue;
+            }
+
+            $data->decimalStock = $stocks[$productId]['stock'];
+            $data->decimalMinPurchase = $stocks[$productId]['min_purchase'];
+            $data->decimalMaxPurchase = $stocks[$productId]['max_purchase'];
+            $data->decimalPurchaseSteps = $stocks[$productId]['purchase_steps'];
+        }
+        return $stockData;
     }
 
     public function alter(array $changes, Context $context): void

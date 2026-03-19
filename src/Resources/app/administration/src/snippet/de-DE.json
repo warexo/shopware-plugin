@@ -28,6 +28,20 @@
     }
   },
   "sw-product": {
+    "warexoDecimalQuantity": {
+      "stockLabel": "Warexo Lagerbestand",
+      "stockPlaceholder": "z. B. 12,500",
+      "stockHelpText": "Fachlicher Lagerbestand mit 3 Nachkommastellen. Wird nur bei aktivierter Dezimalmengen-Konfiguration verwendet.",
+      "minPurchaseLabel": "Warexo Mindestabnahme",
+      "minPurchasePlaceholder": "z. B. 0,125",
+      "minPurchaseHelpText": "Fachliche Mindestabnahme mit 3 Nachkommastellen.",
+      "maxPurchaseLabel": "Warexo Maximalabnahme",
+      "maxPurchasePlaceholder": "z. B. 3,000",
+      "maxPurchaseHelpText": "Optionale fachliche Maximalabnahme mit 3 Nachkommastellen.",
+      "purchaseStepsLabel": "Warexo Bestellschritte",
+      "purchaseStepsPlaceholder": "z. B. 0,125",
+      "purchaseStepsHelpText": "Fachliche Schrittweite mit 3 Nachkommastellen."
+    },
     "warexoProductOptions": {
       "labelWarexoProductOptions": "Auswahllisten"
     }
