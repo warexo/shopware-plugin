@@ -4,13 +4,14 @@ namespace Warexo\Subscriber;
 
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\PlatformRequest;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer;
@@ -22,38 +23,36 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
     private const UPDATE_ROUTE = 'frontend.checkout.line-items.update';
     private const CHANGE_QUANTITY_ROUTE = 'frontend.checkout.line-item.change-quantity';
     private const DECIMAL_PAYLOADS_ATTRIBUTE = 'warexoDecimalPayloads';
+    private const DECIMAL_ADD_COUNT_ATTRIBUTE = 'warexoDecimalAddCount';
 
     public function __construct(
         private readonly DecimalQuantityFeatureDecider $featureDecider,
         private readonly DecimalQuantityRequestTransformer $requestTransformer,
         private readonly CartService $cartService,
-        private readonly SalesChannelRepository $salesChannelProductRepository
+        private readonly EntityRepository $productRepository
     ) {
     }
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => ['onKernelRequest', -10],
+            KernelEvents::CONTROLLER => ['onKernelController', -12],
         ];
     }
 
-    public function onKernelRequest(RequestEvent $event): void
+    public function onKernelController(ControllerEvent $event): void
     {
         if (!$event->isMainRequest() || !$this->featureDecider->isEnabled()) {
             return;
         }
 
         $request = $event->getRequest();
-        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
-        if (!$context instanceof SalesChannelContext) {
-            return;
-        }
-
         $route = $request->attributes->get('_route');
+        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
+        $salesChannelContext = $context instanceof SalesChannelContext ? $context : null;
 
         if ($route === self::ADD_ROUTE || $route === self::UPDATE_ROUTE) {
-            $this->transformLineItems($request, $context);
+            $this->transformLineItems($request, $salesChannelContext);
 
             return;
         }
@@ -62,8 +61,16 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (!$salesChannelContext instanceof SalesChannelContext) {
+            return;
+        }
+
         $lineItemId = $request->attributes->get('id');
-        if (!is_string($lineItemId) || !$this->isDecimalCartLineItem($context, $lineItemId)) {
+        if (!is_string($lineItemId)) {
+            return;
+        }
+
+        if (!$this->isDecimalCartLineItem($salesChannelContext, $lineItemId)) {
             return;
         }
 
@@ -73,10 +80,11 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         $request->attributes->set('warexoDecimalQuantity', $transformed['decimalQuantity']);
+        $request->attributes->set('quantity', $transformed['coreQuantity']);
         $request->request->set('quantity', $transformed['coreQuantity']);
     }
 
-    private function transformLineItems(Request $request, SalesChannelContext $context): void
+    private function transformLineItems(Request $request, ?SalesChannelContext $context): void
     {
         $lineItems = $request->request->all('lineItems');
         if (!is_array($lineItems)) {
@@ -84,6 +92,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         $decimalPayloads = [];
+        $decimalAddCount = 0.0;
 
         foreach ($lineItems as $key => $lineItem) {
             if (!is_array($lineItem)) {
@@ -91,7 +100,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             }
 
             $identifier = is_string($key) ? $key : null;
-            $decimalPayload = $this->resolveDecimalPayload($context, $identifier);
+            $decimalPayload = $this->resolveDecimalPayload($identifier, $context);
             if ($decimalPayload === null) {
                 continue;
             }
@@ -111,6 +120,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             $lineItem['payload'] = $payload;
             $lineItem['quantity'] = $transformed['coreQuantity'];
             $lineItems[$key] = $lineItem;
+            $decimalAddCount += $transformed['decimalQuantity'];
 
             if ($identifier !== null) {
                 $decimalPayloads[$identifier] = $payload;
@@ -119,6 +129,10 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
         $request->request->set('lineItems', $lineItems);
         $request->attributes->set(self::DECIMAL_PAYLOADS_ATTRIBUTE, $decimalPayloads);
+
+        if ($decimalAddCount > 0.0) {
+            $request->attributes->set(self::DECIMAL_ADD_COUNT_ATTRIBUTE, round($decimalAddCount, 3));
+        }
     }
 
     /**
@@ -131,28 +145,37 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         return is_array($payloads) ? $payloads : [];
     }
 
+    public static function getDecimalAddCount(Request $request): ?float
+    {
+        $count = $request->attributes->get(self::DECIMAL_ADD_COUNT_ATTRIBUTE);
+
+        return is_float($count) || is_int($count) ? (float) $count : null;
+    }
+
     /**
      * @return array<string, float|bool>|null
      */
-    private function resolveDecimalPayload(SalesChannelContext $context, ?string $identifier): ?array
+    private function resolveDecimalPayload(?string $identifier, ?SalesChannelContext $context): ?array
     {
         if ($identifier === null) {
             return null;
         }
 
-        $cartLineItem = $this->getCartLineItem($context, $identifier);
-        if ($cartLineItem instanceof LineItem && $this->requestTransformer->isTruthy($cartLineItem->getPayloadValue('warexoIsDecimalQuantity'))) {
-            return $this->buildDecimalPayload([
-                'warexoDecimalMinPurchase' => $cartLineItem->getPayloadValue('warexoDecimalMinPurchase'),
-                'warexoDecimalMaxPurchase' => $cartLineItem->getPayloadValue('warexoDecimalMaxPurchase'),
-                'warexoDecimalPurchaseSteps' => $cartLineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
-            ]);
+        if ($context instanceof SalesChannelContext) {
+            $cartLineItem = $this->getCartLineItem($context, $identifier);
+            if ($cartLineItem instanceof LineItem && $this->requestTransformer->isTruthy($cartLineItem->getPayloadValue('warexoIsDecimalQuantity'))) {
+                return $this->buildDecimalPayload([
+                    'warexoDecimalMinPurchase' => $cartLineItem->getPayloadValue('warexoDecimalMinPurchase'),
+                    'warexoDecimalMaxPurchase' => $cartLineItem->getPayloadValue('warexoDecimalMaxPurchase'),
+                    'warexoDecimalPurchaseSteps' => $cartLineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
+                ]);
+            }
         }
 
         $criteria = new Criteria([$identifier]);
         $criteria->addAssociation('warexoExtension');
 
-        $product = $this->salesChannelProductRepository->search($criteria, $context)->first();
+        $product = $this->productRepository->search($criteria, Context::createDefaultContext())->first();
         if ($product === null) {
             return null;
         }

@@ -7,6 +7,7 @@ use Shopware\Core\Checkout\Cart\CartBehavior;
 use Shopware\Core\Checkout\Cart\CartProcessorInterface;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
+use Shopware\Core\Checkout\Cart\LineItem\QuantityInformation;
 use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\ListPrice;
@@ -54,6 +55,10 @@ class ProductOptionCartProcessor implements CartProcessorInterface
 
             if (!$isDecimalQuantity && $lineItemSelections === []) {
                 continue;
+            }
+
+            if ($isDecimalQuantity) {
+                $this->synchronizeDecimalQuantityInformation($lineItem);
             }
 
             $price = $lineItem->getPrice();
@@ -226,5 +231,41 @@ class ProductOptionCartProcessor implements CartProcessorInterface
         }
 
         return $cloned;
+    }
+
+    private function synchronizeDecimalQuantityInformation(LineItem $lineItem): void
+    {
+        $existing = $lineItem->getQuantityInformation();
+        $quantityInformation = new QuantityInformation();
+
+        $minPurchase = $lineItem->getPayloadValue('warexoDecimalMinPurchase');
+        if (!is_float($minPurchase) && !is_int($minPurchase)) {
+            $minPurchase = $existing?->getMinPurchase();
+        } else {
+            $minPurchase = $this->quantityMapper->toCoreQuantity((float) $minPurchase);
+        }
+
+        $purchaseSteps = $lineItem->getPayloadValue('warexoDecimalPurchaseSteps');
+        if (!is_float($purchaseSteps) && !is_int($purchaseSteps)) {
+            $purchaseSteps = $existing?->getPurchaseSteps();
+        } else {
+            $purchaseSteps = $this->quantityMapper->toCoreQuantity((float) $purchaseSteps);
+        }
+
+        $maxPurchase = $lineItem->getPayloadValue('warexoDecimalMaxPurchase');
+        if (!is_float($maxPurchase) && !is_int($maxPurchase)) {
+            $maxPurchase = $existing?->getMaxPurchase();
+        } else {
+            $maxPurchase = $this->quantityMapper->toCoreQuantity((float) $maxPurchase);
+        }
+
+        $quantityInformation->setMinPurchase(max(1, (int) ($minPurchase ?? 1)));
+        $quantityInformation->setPurchaseSteps(max(1, (int) ($purchaseSteps ?? 1)));
+
+        if ($maxPurchase !== null) {
+            $quantityInformation->setMaxPurchase(max(1, (int) $maxPurchase));
+        }
+
+        $lineItem->setQuantityInformation($quantityInformation);
     }
 }

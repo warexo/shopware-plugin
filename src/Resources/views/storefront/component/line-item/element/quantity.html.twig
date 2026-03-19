@@ -1,10 +1,10 @@
 {% sw_extends '@Storefront/storefront/component/line-item/element/quantity.html.twig' %}
 
 {% set warexoDecimalQuantityEnabled = config('AggroWarexoPlugin.config.decimalstock') and lineItem.payload.warexoIsDecimalQuantity is defined and lineItem.payload.warexoIsDecimalQuantity %}
-{% set warexoDisplayedQuantity = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalQuantity is defined ? lineItem.payload.warexoDecimalQuantity|number_format(3, '.', '') : lineItem.quantity %}
-{% set warexoDisplayedMinPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMinPurchase is defined and lineItem.payload.warexoDecimalMinPurchase is not null ? lineItem.payload.warexoDecimalMinPurchase|number_format(3, '.', '') : quantityInformation.minPurchase %}
-{% set warexoDisplayedPurchaseSteps = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalPurchaseSteps is defined and lineItem.payload.warexoDecimalPurchaseSteps is not null ? lineItem.payload.warexoDecimalPurchaseSteps|number_format(3, '.', '') : quantityInformation.purchaseSteps %}
-{% set warexoDisplayedMaxPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMaxPurchase is defined and lineItem.payload.warexoDecimalMaxPurchase is not null ? lineItem.payload.warexoDecimalMaxPurchase|number_format(3, '.', '') : maxQuantity %}
+{% set warexoDisplayedQuantity = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalQuantity is defined ? lineItem.payload.warexoDecimalQuantity|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : lineItem.quantity %}
+{% set warexoDisplayedMinPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMinPurchase is defined and lineItem.payload.warexoDecimalMinPurchase is not null ? lineItem.payload.warexoDecimalMinPurchase|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : quantityInformation.minPurchase %}
+{% set warexoDisplayedPurchaseSteps = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalPurchaseSteps is defined and lineItem.payload.warexoDecimalPurchaseSteps is not null ? lineItem.payload.warexoDecimalPurchaseSteps|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : quantityInformation.purchaseSteps %}
+{% set warexoDisplayedMaxPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMaxPurchase is defined and lineItem.payload.warexoDecimalMaxPurchase is not null ? lineItem.payload.warexoDecimalMaxPurchase|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : maxQuantity %}
 
 {% block component_line_item_quantity_select_input %}
     <legend class="form-label visually-hidden">

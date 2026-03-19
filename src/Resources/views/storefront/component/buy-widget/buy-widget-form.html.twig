@@ -1,9 +1,9 @@
 {% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget-form.html.twig' %}
 
 {% set warexoDecimalQuantityEnabled = config('AggroWarexoPlugin.config.decimalstock') and product.extensions is defined and product.extensions.warexoExtension is defined and product.extensions.warexoExtension %}
-{% set warexoDecimalMinPurchase = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.minPurchase is not null ? product.extensions.warexoExtension.minPurchase|number_format(3, '.', '') : product.minPurchase %}
-{% set warexoDecimalPurchaseSteps = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.purchaseSteps is not null ? product.extensions.warexoExtension.purchaseSteps|number_format(3, '.', '') : product.purchaseSteps %}
-{% set warexoDecimalMaxPurchase = warexoDecimalQuantityEnabled ? ((product.extensions.warexoExtension.maxPurchase is not null ? product.extensions.warexoExtension.maxPurchase : (product.calculatedMaxPurchase / 1000))|number_format(3, '.', '')) : product.calculatedMaxPurchase %}
+{% set warexoDecimalMinPurchase = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.minPurchase is not null ? product.extensions.warexoExtension.minPurchase|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : product.minPurchase %}
+{% set warexoDecimalPurchaseSteps = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.purchaseSteps is not null ? product.extensions.warexoExtension.purchaseSteps|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : product.purchaseSteps %}
+{% set warexoDecimalMaxPurchase = warexoDecimalQuantityEnabled ? ((product.extensions.warexoExtension.maxPurchase is not null ? product.extensions.warexoExtension.maxPurchase : (product.calculatedMaxPurchase / 1000))|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right')) : product.calculatedMaxPurchase %}
 
 {% block buy_widget_buy_container %}
     {% block buy_widget_buy_container_product_options %}

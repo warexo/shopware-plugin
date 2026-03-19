@@ -86,6 +86,7 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
         if ($product instanceof ProductEntity) {
             return $product;
         }
+
         throw new \RuntimeException('Line item has no product');
     }
 

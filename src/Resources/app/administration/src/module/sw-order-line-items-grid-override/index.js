@@ -16,7 +16,7 @@ Shopware.Component.override('sw-order-line-items-grid', {
             const decimalQuantity = Number(item?.payload?.warexoDecimalQuantity);
             if (Number.isFinite(decimalQuantity)) {
                 return new Intl.NumberFormat(this.$i18n.locale, {
-                    minimumFractionDigits: 3,
+                    minimumFractionDigits: 0,
                     maximumFractionDigits: 3,
                 }).format(decimalQuantity);
             }
