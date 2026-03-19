@@ -19,8 +19,6 @@ use Warexo\Extension\Content\Product\ProductExtensionEntity;
 
 class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 {
-    private const ADD_ROUTE = 'frontend.checkout.line-item.add';
-    private const UPDATE_ROUTE = 'frontend.checkout.line-items.update';
     private const CHANGE_QUANTITY_ROUTE = 'frontend.checkout.line-item.change-quantity';
     private const DECIMAL_PAYLOADS_ATTRIBUTE = 'warexoDecimalPayloads';
     private const DECIMAL_ADD_COUNT_ATTRIBUTE = 'warexoDecimalAddCount';
@@ -51,7 +49,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
         $salesChannelContext = $context instanceof SalesChannelContext ? $context : null;
 
-        if ($route === self::ADD_ROUTE || $route === self::UPDATE_ROUTE) {
+        if ($route !== self::CHANGE_QUANTITY_ROUTE && $this->hasLineItemsPayload($request)) {
             $this->transformLineItems($request, $salesChannelContext);
 
             return;
@@ -227,5 +225,12 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         $lineItem = $cart->getLineItems()->get($lineItemId);
 
         return $lineItem instanceof LineItem ? $lineItem : null;
+    }
+
+    private function hasLineItemsPayload(Request $request): bool
+    {
+        $lineItems = $request->request->all('lineItems');
+
+        return is_array($lineItems) && $lineItems !== [];
     }
 }
