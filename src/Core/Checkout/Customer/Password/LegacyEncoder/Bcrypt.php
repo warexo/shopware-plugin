@@ -2,7 +2,7 @@
 
 namespace Warexo\Core\Checkout\Customer\Password\LegacyEncoder;
 
-use Shopware\Core\Checkout\Customer\Password\LegacyEncoderInterface;
+use Shopware\Core\Checkout\Customer\Password\LegacyEncoder\LegacyEncoderInterface;
 use Shopware\Core\Framework\Log\Package;
 
 #[Package('checkout')]
