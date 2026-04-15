@@ -187,7 +187,9 @@
             <tag name="shopware.cms.data_resolver" />
         </service>
 
-
+        <service id="Warexo\Core\Checkout\Customer\Password\LegacyEncoder\Bcrypt">
+            <tag name="shopware.legacy_encoder"/>
+        </service>
 
     </services>
 </container>
