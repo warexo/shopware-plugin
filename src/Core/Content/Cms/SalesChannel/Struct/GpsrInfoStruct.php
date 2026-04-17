@@ -37,6 +37,11 @@ class GpsrInfoStruct extends Struct
      */
     protected $email;
 
+    /**
+     * @var string|null
+     */
+    protected $description;
+
     public function getCompany(): ?string
     {
         return $this->company;
@@ -95,6 +100,16 @@ class GpsrInfoStruct extends Struct
     public function setEmail(?string $email): void
     {
         $this->email = $email;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
     }
 
 

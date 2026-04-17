@@ -37,14 +37,17 @@ class GpsrInfoCmsElementResolver extends AbstractProductDetailCmsElementResolver
 
             if ($product !== null) {
                 $manufacturer = $product->getManufacturer();
-                if ($manufacturer && $manufacturer->getCustomFields()) {
+                if ($manufacturer) {
+                    $gpsrInfo->setDescription($manufacturer->getTranslation('description') ?? '');
                     $customFields = $manufacturer->getCustomFields();
-                    $gpsrInfo->setCompany($customFields['warexo_gpsr_company'] ?? '');
-                    $gpsrInfo->setAddress($customFields['warexo_gpsr_address'] ?? '');
-                    $gpsrInfo->setCountry($customFields['warexo_gpsr_country'] ?? '');
-                    $gpsrInfo->setZip($customFields['warexo_gpsr_zip'] ?? '');
-                    $gpsrInfo->setCity($customFields['warexo_gpsr_city'] ?? '');
-                    $gpsrInfo->setEmail($customFields['warexo_gpsr_email'] ?? '');
+                    if ($customFields) {
+                        $gpsrInfo->setCompany($customFields['warexo_gpsr_company'] ?? '');
+                        $gpsrInfo->setAddress($customFields['warexo_gpsr_address'] ?? '');
+                        $gpsrInfo->setCountry($customFields['warexo_gpsr_country'] ?? '');
+                        $gpsrInfo->setZip($customFields['warexo_gpsr_zip'] ?? '');
+                        $gpsrInfo->setCity($customFields['warexo_gpsr_city'] ?? '');
+                        $gpsrInfo->setEmail($customFields['warexo_gpsr_email'] ?? '');        
+                    }                                
                 }
             }
         }
