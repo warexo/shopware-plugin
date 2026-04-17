@@ -1,19 +1,23 @@
 <?php declare(strict_types=1);
 
 namespace Warexo\Core\Content\ProductOption;
+
 use Shopware\Core\Content\Product\ProductCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
-use Warexo\Core\Content\ProductOptionValue\ProductOptionValueCollection;
+use Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue\WarexoProductOptionValueCollection;
 
 class WarexoProductOptionEntity extends Entity
 {
     use EntityIdTrait;
+
     protected ?string $displayType;
     protected ?int $position;
     protected ?string $ident;
-    protected ProductOptionValueCollection $productOptionValues;
-    protected ProductCollection $products;
+    protected ?string $name = null;
+    protected ?string $description = null;
+    protected ?WarexoProductOptionValueCollection $productOptionValues = null;
+    protected ?ProductCollection $products = null;
     protected ?array $productIds;
 
     public function getDisplayType(): ?string
@@ -46,26 +50,46 @@ class WarexoProductOptionEntity extends Entity
         $this->ident = $ident;
     }
 
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): void
+    {
+        $this->description = $description;
+    }
+
     /**
-     * @return ProductOptionValueCollection
+     * @return WarexoProductOptionValueCollection|null
      */
-    public function getProductOptionValues(): ProductOptionValueCollection
+    public function getProductOptionValues(): ?WarexoProductOptionValueCollection
     {
         return $this->productOptionValues;
     }
 
     /**
-     * @param ProductOptionValueCollection $productOptionValues
+     * @param WarexoProductOptionValueCollection $productOptionValues
      */
-    public function setProductOptionValues(ProductOptionValueCollection $productOptionValues): void
+    public function setProductOptionValues(WarexoProductOptionValueCollection $productOptionValues): void
     {
         $this->productOptionValues = $productOptionValues;
     }
 
     /**
-     * @return ProductCollection
+     * @return ProductCollection|null
      */
-    public function getProducts(): ProductCollection
+    public function getProducts(): ?ProductCollection
     {
         return $this->products;
     }
@@ -93,5 +117,4 @@ class WarexoProductOptionEntity extends Entity
     {
         $this->productIds = $productIds;
     }
-
 }

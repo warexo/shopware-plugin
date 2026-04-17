@@ -24,7 +24,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\TranslationsAssociationFi
 
 use Warexo\Core\Content\ProductOption\Aggregate\ProductOptionTranslation\WarexoProductOptionTranslationDefinition;
 use Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue\WarexoProductOptionValueDefinition;
-use Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue\WarexoProductOptionValueEntity;
 use Warexo\Core\Content\ProductOption\Aggregate\ProductProductOption\WarexoProductProductOptionDefinition;
 
 class WarexoProductOptionDefinition extends EntityDefinition
@@ -36,9 +35,14 @@ class WarexoProductOptionDefinition extends EntityDefinition
         return self::ENTITY_NAME;
     }
 
+    public function getCollectionClass(): string
+    {
+        return WarexoProductOptionCollection::class;
+    }
+
     public function getEntityClass(): string
     {
-        return WarexoProductOptionValueEntity::class;
+        return WarexoProductOptionEntity::class;
     }
 
     protected function defineFields(): FieldCollection

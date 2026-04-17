@@ -8,7 +8,10 @@ use Shopware\Core\Checkout\Cart\CartDataCollectorInterface;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Content\Product\ProductEntity;
+use Shopware\Core\Content\Product\SalesChannel\SalesChannelProductEntity;
 use Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue\WarexoProductOptionValueEntity;
+use Warexo\Core\Content\ProductOption\WarexoProductOptionCollection;
+use Warexo\Core\Content\ProductOption\WarexoProductOptionEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -46,31 +49,37 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
 
             $product = $this->getLineItemProduct($lineItem, $context);
             $options = $product->getExtension('warexoProductOptions');
+            if (!$options instanceof WarexoProductOptionCollection || count($options) === 0) {
+                continue;
+            }
 
-            if ($options instanceof \Countable && count($options) > 0)
+            $selectedOptions = $lineItem->getPayloadValue('warexoProductOptions');
+            if (!is_array($selectedOptions)) {
+                continue;
+            }
+
+            $lineSelection = [];
+            /** @var WarexoProductOptionEntity $option */
+            foreach($options as $option)
             {
-                $lineSelection = [];
-                $selectedOptions = $lineItem->getPayloadValue('warexoProductOptions');
-                foreach($options as $option)
-                {
-                    if (!is_array($selectedOptions) || !isset($selectedOptions[$option->getId()])) {
-                        continue;
-                    }
-
-                    $value = $this->resolveSelectedOptionValue($option, $selectedOptions[$option->getId()]);
-                    if (!$value instanceof WarexoProductOptionValueEntity) {
-                        continue;
-                    }
-
-                    $lineSelection[] = [
-                        'option' => $option->getName(),
-                        'value' => $value->getName(),
-                        'surcharge' => $value->getSurcharge()
-                    ];
+                if (!isset($selectedOptions[$option->getId()])) {
+                    continue;
                 }
-                if (count($lineSelection)){
-                    $selections[$lineItem->getId()] = $lineSelection;
+
+                $value = $this->resolveSelectedOptionValue($option, $selectedOptions[$option->getId()]);
+                if (!$value instanceof WarexoProductOptionValueEntity) {
+                    continue;
                 }
+
+                $lineSelection[] = [
+                    'option' => $option->getName(),
+                    'value' => $value->getName(),
+                    'surcharge' => $value->getSurcharge()
+                ];
+            }
+
+            if (count($lineSelection)){
+                $selections[$lineItem->getId()] = $lineSelection;
             }
         }
         $data->set('optionValueSelections', $selections);
@@ -99,25 +108,28 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
 
         $criteria = new Criteria([$referencedId]);
         $product = $this->salesChannelProductRepository->search($criteria, $context)->first();
-        if (!$product instanceof ProductEntity) {
+        if (!$product instanceof SalesChannelProductEntity) {
             return null;
         }
 
-        $calculatedPrice = $product->get('calculatedPrice');
-        if ($calculatedPrice === null || !method_exists($calculatedPrice, 'getUnitPrice')) {
+        $calculatedPrice = $product->getCalculatedPrice();
+        if ($calculatedPrice === null) {
             return null;
         }
 
         return (float) $calculatedPrice->getUnitPrice();
     }
 
-    private function resolveSelectedOptionValue($option, mixed $selectedValueId): ?WarexoProductOptionValueEntity
+    private function resolveSelectedOptionValue(WarexoProductOptionEntity $option, mixed $selectedValueId): ?WarexoProductOptionValueEntity
     {
-        if (!is_string($selectedValueId) || !method_exists($option, 'getProductOptionValues')) {
+        if (!is_string($selectedValueId)) {
             return null;
         }
 
         $optionValues = $option->getProductOptionValues();
+        if ($optionValues === null) {
+            return null;
+        }
 
         foreach ($optionValues as $optionValue) {
             if (!$optionValue instanceof WarexoProductOptionValueEntity) {

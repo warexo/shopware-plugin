@@ -5,14 +5,14 @@ namespace Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue;
 use Shopware\Core\Content\Media\MediaEntity;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
-use Shopware\Core\Framework\Struct\Struct;
+use Warexo\Core\Content\ProductOption\WarexoProductOptionEntity;
 
 class WarexoProductOptionValueEntity extends Entity
 {
     use EntityIdTrait;
 
     protected string $productOptionId;
-    protected ?ProductOptionEntity $productOption = null;
+    protected ?WarexoProductOptionEntity $productOption = null;
 
     protected ?string $mediaId;
     protected ?MediaEntity $media = null;
@@ -40,17 +40,17 @@ class WarexoProductOptionValueEntity extends Entity
     }
 
     /**
-     * @return ProductOptionEntity
+     * @return WarexoProductOptionEntity|null
      */
-    public function getProductOption(): ProductOptionEntity
+    public function getProductOption(): ?WarexoProductOptionEntity
     {
         return $this->productOption;
     }
 
     /**
-     * @param ProductOptionEntity $productOption
+     * @param WarexoProductOptionEntity $productOption
      */
-    public function setProductOption(ProductOptionEntity $productOption): void
+    public function setProductOption(WarexoProductOptionEntity $productOption): void
     {
         $this->productOption = $productOption;
     }
@@ -150,5 +150,4 @@ class WarexoProductOptionValueEntity extends Entity
     {
         $this->colorHexCode = $colorHexCode;
     }
-
 }

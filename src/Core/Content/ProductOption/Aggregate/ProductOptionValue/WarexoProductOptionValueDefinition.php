@@ -31,6 +31,11 @@ class WarexoProductOptionValueDefinition extends EntityDefinition
         return self::ENTITY_NAME;
     }
 
+    public function getCollectionClass(): string
+    {
+        return WarexoProductOptionValueCollection::class;
+    }
+
     public function getEntityClass(): string
     {
         return WarexoProductOptionValueEntity::class;
