@@ -5,9 +5,13 @@
         <input
                 class="product-detail-product-option-value-input{% if isCustomForm %} custom-form-cms-element-input{% endif %}"
                 type="radio"
+                {% if loop.first %}
+                    checked
+                {% endif %}
                 {% if isCustomForm %}
                     data-target="lineItemData"
                     data-field-name="[warexoProductOptions][{{ option.id }}]"
+                    name="_warexoProductOptions[{{ option.id }}]"
                 {% else %}
                     name="lineItems[{{ productId }}][warexoProductOptions][{{ option.id }}]"
                 {% endif %}

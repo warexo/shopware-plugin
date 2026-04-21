@@ -12,7 +12,7 @@
         {% block component_product_options_option_select_values %}
             {% for value in option.productOptionValues %}
                 {% block component_product_options_option_select_values_value %}
-                    <option value="{{ value.id }}" {% if value.media %}data-media-url="{{ value.media.url }}"{% endif %} {% if value.colorHexCode %}data-hex-code="{{ value.colorHexCode }}"{% endif %}>
+                    <option value="{{ value.id }}" {% if value.media %}data-media-url="{{ value.media.url }}"{% endif %} {% if value.colorHexCode %}data-hex-code="{{ value.colorHexCode }}"{% endif %} {% if loop.first %}selected{% endif %}>
                         {% block component_product_options_option_select_values_value_text %}
                             {{ value.name }}
                         {% endblock %}
