@@ -4,16 +4,19 @@ namespace Warexo\Subscriber;
 
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\SalesChannel\CartService;
+use Shopware\Core\Content\Product\ProductEntity;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\PlatformRequest;
+use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider;
+use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer;
 use Warexo\Extension\Content\Product\ProductExtensionEntity;
 
@@ -27,7 +30,8 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         private readonly DecimalQuantityFeatureDecider $featureDecider,
         private readonly DecimalQuantityRequestTransformer $requestTransformer,
         private readonly CartService $cartService,
-        private readonly EntityRepository $productRepository
+        private readonly EntityRepository $productRepository,
+        private readonly SalesChannelRepository $salesChannelProductRepository
     ) {
     }
 
@@ -68,18 +72,31 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if (!$this->isDecimalCartLineItem($salesChannelContext, $lineItemId)) {
+        $cartLineItem = $this->getCartLineItem($salesChannelContext, $lineItemId);
+        if (!$cartLineItem instanceof LineItem) {
             return;
         }
 
-        $transformed = $this->requestTransformer->transform($request->request->get('quantity'));
-        if ($transformed === null) {
+        if ($this->requestTransformer->isTruthy($cartLineItem->getPayloadValue('warexoIsDecimalQuantity'))) {
+            $transformed = $this->transformDecimalCartQuantity($cartLineItem, $request->request->get('quantity'));
+            if ($transformed === null) {
+                return;
+            }
+
+            $request->attributes->set('warexoDecimalQuantity', $transformed['decimalQuantity']);
+            $request->attributes->set('quantity', $transformed['coreQuantity']);
+            $request->request->set('quantity', $transformed['coreQuantity']);
+
             return;
         }
 
-        $request->attributes->set('warexoDecimalQuantity', $transformed['decimalQuantity']);
-        $request->attributes->set('quantity', $transformed['coreQuantity']);
-        $request->request->set('quantity', $transformed['coreQuantity']);
+        $quantity = $this->transformCoreCartQuantity($cartLineItem, $request->request->get('quantity'));
+        if ($quantity === null) {
+            return;
+        }
+
+        $request->attributes->set('quantity', $quantity);
+        $request->request->set('quantity', $quantity);
     }
 
     private function transformLineItems(Request $request, ?SalesChannelContext $context): void
@@ -131,12 +148,27 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
             $decimalPayload = $this->resolveDecimalPayload($lineItemId, $productId, $context);
             if ($decimalPayload === null) {
+                $quantity = $this->transformCoreProductQuantity($productId, $context, $lineItem['quantity'] ?? null);
+                if ($quantity !== null) {
+                    $lineItem['quantity'] = $quantity;
+                }
+
                 $lineItems[$key] = $lineItem;
 
                 continue;
             }
 
-            $transformed = $this->requestTransformer->transform($lineItem['quantity'] ?? null);
+            $quantity = $this->normalizeRequestedQuantity($lineItem['quantity'] ?? null);
+            if ($quantity !== null) {
+                $quantity = $this->snapQuantityToPurchaseInterval(
+                    $quantity,
+                    $decimalPayload['warexoDecimalMinPurchase'] ?? null,
+                    $decimalPayload['warexoDecimalPurchaseSteps'] ?? null,
+                    $decimalPayload['warexoDecimalMaxPurchase'] ?? null
+                );
+            }
+
+            $transformed = $this->requestTransformer->transform($quantity);
             if ($transformed === null) {
                 $lineItems[$key] = $lineItem;
 
@@ -204,11 +236,8 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             return null;
         }
 
-        $criteria = new Criteria([$productId]);
-        $criteria->addAssociation('warexoExtension');
-
-        $product = $this->productRepository->search($criteria, Context::createDefaultContext())->first();
-        if ($product === null) {
+        $product = $this->loadProduct($productId, $context);
+        if (!$product instanceof ProductEntity) {
             return null;
         }
 
@@ -219,9 +248,35 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
         return $this->buildDecimalPayload([
             'warexoDecimalMinPurchase' => $extension->getMinPurchase(),
-            'warexoDecimalMaxPurchase' => $extension->getMaxPurchase(),
+            'warexoDecimalMaxPurchase' => $extension->getMaxPurchase() ?? $this->resolveCalculatedMaxPurchase($product),
             'warexoDecimalPurchaseSteps' => $extension->getPurchaseSteps(),
         ]);
+    }
+
+    private function loadProduct(string $productId, ?SalesChannelContext $context): ?ProductEntity
+    {
+        $criteria = new Criteria([$productId]);
+        $criteria->addAssociation('warexoExtension');
+
+        if ($context instanceof SalesChannelContext) {
+            $product = $this->salesChannelProductRepository->search($criteria, $context)->first();
+
+            return $product instanceof ProductEntity ? $product : null;
+        }
+
+        $product = $this->productRepository->search($criteria, Context::createDefaultContext())->first();
+
+        return $product instanceof ProductEntity ? $product : null;
+    }
+
+    private function resolveCalculatedMaxPurchase(ProductEntity $product): ?float
+    {
+        $calculatedMaxPurchase = $product->get('calculatedMaxPurchase');
+        if (!is_int($calculatedMaxPurchase) && !is_float($calculatedMaxPurchase)) {
+            return null;
+        }
+
+        return $calculatedMaxPurchase / 1000;
     }
 
     /**
@@ -244,12 +299,124 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         return $payload;
     }
 
-    private function isDecimalCartLineItem(SalesChannelContext $context, string $lineItemId): bool
+    /**
+     * @return array{decimalQuantity: float, coreQuantity: int}|null
+     */
+    private function transformDecimalCartQuantity(LineItem $lineItem, mixed $rawQuantity): ?array
     {
-        $lineItem = $this->getCartLineItem($context, $lineItemId);
+        $quantity = $this->normalizeRequestedQuantity($rawQuantity);
+        if ($quantity === null) {
+            return null;
+        }
 
-        return $lineItem instanceof LineItem
-            && $this->requestTransformer->isTruthy($lineItem->getPayloadValue('warexoIsDecimalQuantity'));
+        $quantity = $this->snapQuantityToPurchaseInterval(
+            $quantity,
+            $lineItem->getPayloadValue('warexoDecimalMinPurchase'),
+            $lineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
+            $lineItem->getPayloadValue('warexoDecimalMaxPurchase')
+        );
+
+        return $this->requestTransformer->transform(round($quantity, DecimalQuantityMapper::SCALE));
+    }
+
+    private function transformCoreCartQuantity(LineItem $lineItem, mixed $rawQuantity): ?int
+    {
+        $quantity = $this->normalizeRequestedQuantity($rawQuantity);
+        if ($quantity === null || $quantity <= 0.0) {
+            return null;
+        }
+
+        $quantityInformation = $lineItem->getQuantityInformation();
+        $quantity = $this->snapQuantityToPurchaseInterval(
+            $quantity,
+            $quantityInformation?->getMinPurchase(),
+            $quantityInformation?->getPurchaseSteps(),
+            $quantityInformation?->getMaxPurchase()
+        );
+
+        return max(1, (int) round($quantity));
+    }
+
+    private function transformCoreProductQuantity(?string $productId, ?SalesChannelContext $context, mixed $rawQuantity): ?int
+    {
+        if ($productId === null) {
+            return null;
+        }
+
+        $product = $this->loadProduct($productId, $context);
+        if (!$product instanceof ProductEntity) {
+            return null;
+        }
+
+        $quantity = $this->normalizeRequestedQuantity($rawQuantity);
+        if ($quantity === null || $quantity <= 0.0) {
+            return null;
+        }
+
+        $quantity = $this->snapQuantityToPurchaseInterval(
+            $quantity,
+            $product->get('minPurchase'),
+            $product->get('purchaseSteps'),
+            $product->get('maxPurchase')
+        );
+
+        return max(1, (int) round($quantity));
+    }
+
+    private function normalizeRequestedQuantity(mixed $rawQuantity): ?float
+    {
+        if (is_int($rawQuantity) || is_float($rawQuantity)) {
+            return (float) $rawQuantity;
+        }
+
+        if (!is_string($rawQuantity)) {
+            return null;
+        }
+
+        $normalized = str_replace(',', '.', trim($rawQuantity));
+        if ($normalized === '' || !is_numeric($normalized)) {
+            return null;
+        }
+
+        return (float) $normalized;
+    }
+
+    private function snapQuantityToPurchaseInterval(float $quantity, mixed $minPurchase, mixed $purchaseSteps, mixed $maxPurchase): float
+    {
+        $minPurchase = $this->normalizePositiveNumber($minPurchase) ?? 1.0;
+        $purchaseSteps = $this->normalizePositiveNumber($purchaseSteps) ?? 1.0;
+        $maxPurchase = $this->normalizePositiveNumber($maxPurchase);
+
+        $steps = round(($quantity - $minPurchase) / $purchaseSteps);
+        $quantity = $minPurchase + ($steps * $purchaseSteps);
+        $quantity = max($minPurchase, $quantity);
+
+        if ($maxPurchase !== null) {
+            $maxPurchase = max($minPurchase, $maxPurchase);
+            if ($quantity > $maxPurchase) {
+                $quantity = $minPurchase + (floor(($maxPurchase - $minPurchase) / $purchaseSteps) * $purchaseSteps);
+            }
+        }
+
+        return $quantity;
+    }
+
+    private function normalizePositiveNumber(mixed $value): ?float
+    {
+        if (is_string($value)) {
+            $value = str_replace(',', '.', trim($value));
+            if ($value === '' || !is_numeric($value)) {
+                return null;
+            }
+        }
+
+        if (!is_int($value) && !is_float($value) && !is_string($value)) {
+            return null;
+        }
+
+        $value = (float) $value;
+
+        return $value > 0.0 ? $value : null;
     }
 
     private function getCartLineItem(SalesChannelContext $context, string $lineItemId): ?LineItem

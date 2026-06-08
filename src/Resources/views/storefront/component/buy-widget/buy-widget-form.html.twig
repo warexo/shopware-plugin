@@ -2,8 +2,10 @@
 
 {% set warexoDecimalQuantityEnabled = config('AggroWarexoPlugin.config.decimalstock') and product.extensions is defined and product.extensions.warexoExtension is defined and product.extensions.warexoExtension %}
 {% set warexoDecimalMinPurchase = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.minPurchase is not null ? product.extensions.warexoExtension.minPurchase|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : product.minPurchase %}
-{% set warexoDecimalPurchaseSteps = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.purchaseSteps is not null ? product.extensions.warexoExtension.purchaseSteps|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : product.purchaseSteps %}
+{% set warexoDecimalPurchaseSteps = warexoDecimalQuantityEnabled and product.extensions.warexoExtension.purchaseSteps is not null ? product.extensions.warexoExtension.purchaseSteps|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : (product.purchaseSteps ?: 1) %}
 {% set warexoDecimalMaxPurchase = warexoDecimalQuantityEnabled ? ((product.extensions.warexoExtension.maxPurchase is not null ? product.extensions.warexoExtension.maxPurchase : (product.calculatedMaxPurchase / 1000))|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right')) : product.calculatedMaxPurchase %}
+{% set warexoQuantityInputLocale = app.request.locale|default('de_DE') %}
+{% set warexoQuantityAllowsDecimals = warexoDecimalQuantityEnabled and (warexoDecimalMinPurchase|floatval != warexoDecimalMinPurchase|round(0, 'floor') or warexoDecimalPurchaseSteps|floatval != warexoDecimalPurchaseSteps|round(0, 'floor')) %}
 
 {% block buy_widget_buy_container %}
     {% block buy_widget_buy_container_product_options %}
@@ -29,6 +31,8 @@
         </button>
         <input
             type="number"
+            {% if warexoQuantityInputLocale %}lang="{{ warexoQuantityInputLocale|replace({'_': '-'})|e('html_attr') }}"{% endif %}
+            {% if warexoQuantityAllowsDecimals %}inputmode="decimal"{% endif %}
             name="lineItems[{{ product.id }}][quantity]"
             class="form-control js-quantity-selector quantity-selector-group-input"
             min="{{ warexoDecimalMinPurchase }}"

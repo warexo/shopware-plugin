@@ -3,8 +3,10 @@
 {% set warexoDecimalQuantityEnabled = config('AggroWarexoPlugin.config.decimalstock') and lineItem.payload.warexoIsDecimalQuantity is defined and lineItem.payload.warexoIsDecimalQuantity %}
 {% set warexoDisplayedQuantity = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalQuantity is defined ? lineItem.payload.warexoDecimalQuantity|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : lineItem.quantity %}
 {% set warexoDisplayedMinPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMinPurchase is defined and lineItem.payload.warexoDecimalMinPurchase is not null ? lineItem.payload.warexoDecimalMinPurchase|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : quantityInformation.minPurchase %}
-{% set warexoDisplayedPurchaseSteps = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalPurchaseSteps is defined and lineItem.payload.warexoDecimalPurchaseSteps is not null ? lineItem.payload.warexoDecimalPurchaseSteps|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : quantityInformation.purchaseSteps %}
+{% set warexoDisplayedPurchaseSteps = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalPurchaseSteps is defined and lineItem.payload.warexoDecimalPurchaseSteps is not null ? lineItem.payload.warexoDecimalPurchaseSteps|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : (quantityInformation.purchaseSteps|default(1) ?: 1) %}
 {% set warexoDisplayedMaxPurchase = warexoDecimalQuantityEnabled and lineItem.payload.warexoDecimalMaxPurchase is defined and lineItem.payload.warexoDecimalMaxPurchase is not null ? lineItem.payload.warexoDecimalMaxPurchase|number_format(3, '.', '')|trim('0', 'right')|trim('.', 'right') : maxQuantity %}
+{% set warexoQuantityInputLocale = app.request.locale|default('de_DE') %}
+{% set warexoQuantityAllowsDecimals = warexoDecimalQuantityEnabled and (warexoDisplayedMinPurchase|floatval != warexoDisplayedMinPurchase|round(0, 'floor') or warexoDisplayedPurchaseSteps|floatval != warexoDisplayedPurchaseSteps|round(0, 'floor')) %}
 
 {% block component_line_item_quantity_select_input %}
     <legend class="form-label visually-hidden">
@@ -32,6 +34,8 @@
         <input
             {% if isDigital %}disabled="disabled"{% endif %}
             type="number"
+            {% if warexoQuantityInputLocale %}lang="{{ warexoQuantityInputLocale|replace({'_': '-'})|e('html_attr') }}"{% endif %}
+            {% if warexoQuantityAllowsDecimals %}inputmode="decimal"{% endif %}
             name="quantity"
             class="form-control js-quantity-selector quantity-selector-group-input quantity-input-{{ lineItem.id }} {% if displayMode === 'offcanvas' %} js-offcanvas-cart-change-quantity-number{% endif %}"
             min="{{ warexoDisplayedMinPurchase }}"

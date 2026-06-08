@@ -92,6 +92,7 @@
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
             <argument type="service" id="product.repository"/>
+            <argument type="service" id="sales_channel.product.repository"/>
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Subscriber\DecimalQuantityAddToCartFlashSubscriber">
