@@ -1,5 +1,10 @@
 {
   "detail": {
-    "tabsDownloads": "Downloads"
+    "tabsDownloads": "Downloads",
+    "gpsrInfo": {
+      "manufacturer": "Hersteller",
+      "importer": "Importeur",
+      "responsiblePerson": "Verantwortliche Person"
+    }
   }
 }

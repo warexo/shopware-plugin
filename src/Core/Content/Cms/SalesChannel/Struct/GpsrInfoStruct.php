@@ -42,6 +42,46 @@ class GpsrInfoStruct extends Struct
      */
     protected $description;
 
+     /**
+     * @var string|null
+     */
+    protected $url;
+
+    /**
+     * @var string|null
+     */
+    protected $importerCompany;
+
+    /**
+    * @var string|null
+    */
+    protected $importerAddress;
+
+    /**
+     * @var string|null
+     */
+    protected $importerUrl;
+
+    /**
+     * @var string|null
+     */
+    protected $importerEmail;
+
+    /**
+     * @var string|null
+     */
+    protected $responsiblePersonCompany;
+
+    /**
+     * @var string|null
+     */
+    protected $responsiblePersonAddress;
+
+    /**
+     * @var string|null
+     */
+    protected $responsiblePersonEmail;
+
     public function getCompany(): ?string
     {
         return $this->company;
@@ -112,6 +152,84 @@ class GpsrInfoStruct extends Struct
         $this->description = $description;
     }
 
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
 
+    public function setUrl(?string $url): void
+    {
+        $this->url = $url;
+    }
+
+    public function getImporterCompany(): ?string
+    {
+        return $this->importerCompany;
+    }
+
+    public function setImporterCompany(?string $importerCompany): void
+    {
+        $this->importerCompany = $importerCompany;
+    }
+
+    public function getImporterAddress(): ?string
+    {
+        return $this->importerAddress;
+    }
+
+    public function setImporterAddress(?string $importerAddress): void
+    {
+        $this->importerAddress = $importerAddress;
+    }
+
+    public function getImporterUrl(): ?string
+    {
+        return $this->importerUrl;
+    }
+
+    public function setImporterUrl(?string $importerUrl): void
+    {
+        $this->importerUrl = $importerUrl;
+    }
+
+    public function getImporterEmail(): ?string
+    {
+        return $this->importerEmail;
+    }
+
+    public function setImporterEmail(?string $importerEmail): void
+    {
+        $this->importerEmail = $importerEmail;
+    }
+
+    public function getResponsiblePersonCompany(): ?string
+    {
+        return $this->responsiblePersonCompany;
+    }
+
+    public function setResponsiblePersonCompany(?string $responsiblePersonCompany): void
+    {
+        $this->responsiblePersonCompany = $responsiblePersonCompany;
+    }
+
+    public function getResponsiblePersonAddress(): ?string
+    {
+        return $this->responsiblePersonAddress;
+    }
+
+    public function setResponsiblePersonAddress(?string $responsiblePersonAddress): void
+    {
+        $this->responsiblePersonAddress = $responsiblePersonAddress;
+    }
+
+    public function getResponsiblePersonEmail(): ?string
+    {
+        return $this->responsiblePersonEmail;
+    }
+
+    public function setResponsiblePersonEmail(?string $responsiblePersonEmail): void
+    {
+        $this->responsiblePersonEmail = $responsiblePersonEmail;
+    }
 
 }

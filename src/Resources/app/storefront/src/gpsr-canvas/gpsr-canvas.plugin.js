@@ -4,6 +4,11 @@ export default class GpsrCanvasPlugin extends PluginBaseClass {
 
     static options = {
         infos: null,
+        labels: {
+            manufacturer: 'Manufacturer',
+            importer: 'Importer',
+            responsiblePerson: 'Responsible Person',
+        }
     };
 
     init() {
@@ -52,13 +57,40 @@ export default class GpsrCanvasPlugin extends PluginBaseClass {
     }
 
     getRawLines(infos) {
+        const detailInfos = [];
         if (infos.company) {
-            return [
+            detailInfos.push(...[
+                this.options.labels.manufacturer,
                 infos.company,
                 infos.address,
                 [infos.zip, infos.city, infos.country].filter(Boolean).join(' '),
                 infos.email,
-            ].map((line) => this.normalizeLine(line));
+                ' '
+            ]);
+        }
+
+        if (infos.importerCompany) {
+            detailInfos.push(...[
+                this.options.labels.importer,
+                infos.importerCompany,
+                infos.importerAddress,
+                infos.importerUrl,
+                infos.importerEmail,
+                ' '
+            ]);
+        }
+
+        if (infos.responsiblePersonCompany) {
+            detailInfos.push(...[
+                this.options.labels.responsiblePerson,
+                infos.responsiblePersonCompany,
+                infos.responsiblePersonAddress,
+                infos.responsiblePersonEmail,
+            ]);
+        }
+
+        if (detailInfos.length) {
+            return detailInfos.map((line) => this.normalizeLine(line));;
         }
 
         return this.extractLinesFromHtml(infos.description || '');

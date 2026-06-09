@@ -46,7 +46,15 @@ class GpsrInfoCmsElementResolver extends AbstractProductDetailCmsElementResolver
                         $gpsrInfo->setCountry($customFields['warexo_gpsr_country'] ?? '');
                         $gpsrInfo->setZip($customFields['warexo_gpsr_zip'] ?? '');
                         $gpsrInfo->setCity($customFields['warexo_gpsr_city'] ?? '');
-                        $gpsrInfo->setEmail($customFields['warexo_gpsr_email'] ?? '');        
+                        $gpsrInfo->setEmail($customFields['warexo_gpsr_email'] ?? '');     
+                        $gpsrInfo->setUrl($customFields['warexo_gpsr_url'] ?? '');   
+                        $gpsrInfo->setImporterCompany($customFields['warexo_gpsr_importer_company'] ?? '');
+                        $gpsrInfo->setImporterAddress($customFields['warexo_gpsr_importer_address'] ?? '');
+                        $gpsrInfo->setImporterUrl($customFields['warexo_gpsr_importer_url'] ?? '');
+                        $gpsrInfo->setImporterEmail($customFields['warexo_gpsr_importer_email'] ?? '');
+                        $gpsrInfo->setResponsiblePersonCompany($customFields['warexo_gpsr_responsible_person_company'] ?? '');
+                        $gpsrInfo->setResponsiblePersonAddress($customFields['warexo_gpsr_responsible_person_address'] ?? '');
+                        $gpsrInfo->setResponsiblePersonEmail($customFields['warexo_gpsr_responsible_person_email'] ?? '');
                     }                                
                 }
             }

@@ -3,7 +3,12 @@
     {% set data = element.data %}
 
     {% set gpsrCanvasOptions = {
-        infos: data
+        infos: data,
+        labels: {
+            manufacturer: '{{ "detail.gpsrInfo.manufacturer"|trans|sw_sanitize }}',
+            importer: '{{ "detail.gpsrInfo.importer"|trans|sw_sanitize }}',
+            responsiblePerson: '{{ "detail.gpsrInfo.responsiblePerson"|trans|sw_sanitize }}',
+        }
     } %}
 
     <div class="cms-element-{{ element.type }}">
