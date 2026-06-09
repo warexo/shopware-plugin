@@ -67,6 +67,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
             }
 
             $businessUnitPrice = $this->resolveBusinessUnitPrice($data, $lineItem, $price->getUnitPrice());
+            $businessUnitPrice += $this->resolveCustomFormUnitSurcharge($data, $lineItem);
             $normalizedUnitPrice = $businessUnitPrice;
             $basePrice = $isDecimalQuantity
                 ? $this->quantityMapper->toCoreUnitPrice($businessUnitPrice)
@@ -157,6 +158,25 @@ class ProductOptionCartProcessor implements CartProcessorInterface
         }
 
         return $calculatedPrice->getUnitPrice();
+    }
+
+    private function resolveCustomFormUnitSurcharge(CartDataCollection $data, LineItem $lineItem): float
+    {
+        $customFormId = $lineItem->getPayloadValue('customFormId');
+        $customFormFields = $lineItem->getPayloadValue('customFormFields');
+        if (!is_string($customFormId) || !is_array($customFormFields)) {
+            return 0.0;
+        }
+
+        $referencedId = $lineItem->getReferencedId();
+        if ($referencedId === null) {
+            return 0.0;
+        }
+
+        $key = 'custom-form-price-' . $referencedId . '-' . $customFormId . '-' . md5(serialize($customFormFields));
+        $surcharge = $data->get($key);
+
+        return is_numeric($surcharge) ? (float) $surcharge : 0.0;
     }
 
     private function normalizeCalculatedPrice(LineItem $lineItem, CalculatedPrice $price, float $normalizedUnitPrice): CalculatedPrice

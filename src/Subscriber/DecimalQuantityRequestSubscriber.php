@@ -175,14 +175,15 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
                 continue;
             }
 
-            $payload = $lineItem['payload'] ?? [];
-            if (!is_array($payload)) {
-                $payload = [];
+            $payload = $decimalPayload;
+            $payload['warexoDecimalQuantity'] = $transformed['decimalQuantity'];
+
+            if (isset($lineItem['payload']) && is_array($lineItem['payload'])) {
+                $lineItem['payload'] = array_merge($lineItem['payload'], $payload);
+            } elseif (!isset($lineItem['payload']) || (is_string($lineItem['payload']) && trim($lineItem['payload']) === '')) {
+                $lineItem['payload'] = $payload;
             }
 
-            $payload = array_merge($payload, $decimalPayload);
-            $payload['warexoDecimalQuantity'] = $transformed['decimalQuantity'];
-            $lineItem['payload'] = $payload;
             $lineItem['quantity'] = $transformed['coreQuantity'];
             $lineItems[$key] = $lineItem;
             $decimalAddCount += $transformed['decimalQuantity'];

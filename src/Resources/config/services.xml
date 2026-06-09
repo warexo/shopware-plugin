@@ -177,7 +177,7 @@
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
-            <tag name="shopware.cart.processor" priority="4901"/>
+            <tag name="shopware.cart.processor" priority="4899"/>
         </service>
 
         <!-- cms data resolvers -->
