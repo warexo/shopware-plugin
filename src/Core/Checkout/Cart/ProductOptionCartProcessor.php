@@ -127,7 +127,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
 
             $calculated = $this->calculator->calculate($definition, $context);
             if ($isDecimalQuantity) {
-                $calculated = $this->normalizeCalculatedPrice($lineItem, $calculated, $normalizedUnitPrice);
+                $calculated = $this->normalizeCalculatedPrice($lineItem, $calculated, $definition, $normalizedUnitPrice);
             }
 
             $lineItem->setPrice($calculated);
@@ -179,7 +179,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
         return is_numeric($surcharge) ? (float) $surcharge : 0.0;
     }
 
-    private function normalizeCalculatedPrice(LineItem $lineItem, CalculatedPrice $price, float $normalizedUnitPrice): CalculatedPrice
+    private function normalizeCalculatedPrice(LineItem $lineItem, CalculatedPrice $price, QuantityPriceDefinition $definition, float $normalizedUnitPrice): CalculatedPrice
     {
         $decimalQuantity = $lineItem->getPayloadValue('warexoDecimalQuantity');
         if (!is_float($decimalQuantity) && !is_int($decimalQuantity)) {
@@ -195,47 +195,55 @@ class ProductOptionCartProcessor implements CartProcessorInterface
             $this->cloneCalculatedTaxes($price->getCalculatedTaxes(), $taxFactor),
             $price->getTaxRules(),
             $price->getQuantity(),
-            $this->normalizeReferencePrice($price->getReferencePrice()),
-            $this->normalizeListPrice($price),
-            $this->normalizeRegulationPrice($price->getRegulationPrice())
+            $this->normalizeReferencePrice($price->getReferencePrice(), $normalizedUnitPrice),
+            $this->normalizeListPrice($price, $definition, $normalizedUnitPrice),
+            $this->normalizeRegulationPrice($definition)
         );
     }
 
-    private function normalizeReferencePrice(?ReferencePrice $referencePrice): ?ReferencePrice
+    private function normalizeReferencePrice(?ReferencePrice $referencePrice, float $normalizedUnitPrice): ?ReferencePrice
     {
         if ($referencePrice === null) {
             return null;
         }
 
+        $purchaseUnit = $referencePrice->getPurchaseUnit();
+        $referenceUnit = $referencePrice->getReferenceUnit();
+        if ($purchaseUnit <= 0.0 || $referenceUnit <= 0.0) {
+            return null;
+        }
+
         return new ReferencePrice(
-            $this->quantityMapper->fromCoreUnitPrice($referencePrice->getPrice()),
-            $referencePrice->getPurchaseUnit(),
-            $referencePrice->getReferenceUnit(),
+            round($normalizedUnitPrice / $purchaseUnit * $referenceUnit, DecimalQuantityMapper::SCALE + 2),
+            $purchaseUnit,
+            $referenceUnit,
             $referencePrice->getUnitName()
         );
     }
 
-    private function normalizeListPrice(CalculatedPrice $price): ?ListPrice
+    private function normalizeListPrice(CalculatedPrice $price, QuantityPriceDefinition $definition, float $normalizedUnitPrice): ?ListPrice
     {
         $listPrice = $price->getListPrice();
-        if ($listPrice === null) {
+        $definitionListPrice = $definition->getListPrice();
+        if ($listPrice === null || $definitionListPrice === null) {
             return null;
         }
 
         return ListPrice::createFromUnitPrice(
-            $this->quantityMapper->fromCoreUnitPrice($price->getUnitPrice()),
-            $this->quantityMapper->fromCoreUnitPrice($listPrice->getPrice())
+            $normalizedUnitPrice,
+            $this->quantityMapper->fromCoreUnitPrice($definitionListPrice)
         );
     }
 
-    private function normalizeRegulationPrice(?RegulationPrice $regulationPrice): ?RegulationPrice
+    private function normalizeRegulationPrice(QuantityPriceDefinition $definition): ?RegulationPrice
     {
+        $regulationPrice = $definition->getRegulationPrice();
         if ($regulationPrice === null) {
             return null;
         }
 
         return new RegulationPrice(
-            $this->quantityMapper->fromCoreUnitPrice($regulationPrice->getPrice())
+            $this->quantityMapper->fromCoreUnitPrice($regulationPrice)
         );
     }
 
