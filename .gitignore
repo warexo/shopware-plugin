@@ -1,8 +1,0 @@
-.idea
-*.zip
-src/Resources/app/storefront/dist
-.DS_Store
-AGENT_INSTRUCTIONS.md
-.vscode
-src/Resources/public/administration/
-src/Resources/app/storefront/dist/
