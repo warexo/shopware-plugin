@@ -59,6 +59,7 @@ class ProductOptionCartProcessor implements CartProcessorInterface
 
             if ($isDecimalQuantity) {
                 $this->synchronizeDecimalQuantityInformation($lineItem);
+                $this->synchronizeDecimalQuantityPayload($lineItem);
             }
 
             $price = $lineItem->getPrice();
@@ -297,5 +298,13 @@ class ProductOptionCartProcessor implements CartProcessorInterface
         }
 
         $lineItem->setQuantityInformation($quantityInformation);
+    }
+
+    private function synchronizeDecimalQuantityPayload(LineItem $lineItem): void
+    {
+        $lineItem->setPayloadValue(
+            'warexoDecimalQuantity',
+            $this->quantityMapper->fromCoreQuantity($lineItem->getQuantity())
+        );
     }
 }

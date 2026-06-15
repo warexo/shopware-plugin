@@ -177,8 +177,9 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
                 continue;
             }
 
-            $payload = $this->withoutInternalPayloadValues($decimalPayload);
-            $payload['warexoDecimalQuantity'] = $transformed['decimalQuantity'];
+            $requestPayload = $decimalPayload;
+            $requestPayload['warexoDecimalQuantity'] = $transformed['decimalQuantity'];
+            $payload = $this->withoutInternalPayloadValues($requestPayload);
 
             if (isset($lineItem['payload']) && is_array($lineItem['payload'])) {
                 $lineItem['payload'] = array_merge($lineItem['payload'], $payload);
@@ -191,7 +192,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             $decimalAddCount += $transformed['decimalQuantity'];
 
             if ($lineItemId !== null) {
-                $decimalPayloads[$lineItemId] = $payload;
+                $decimalPayloads[$lineItemId] = $requestPayload;
             }
         }
 
@@ -231,6 +232,8 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
                     'warexoDecimalMinPurchase' => $cartLineItem->getPayloadValue('warexoDecimalMinPurchase'),
                     'warexoDecimalMaxPurchase' => $cartLineItem->getPayloadValue('warexoDecimalMaxPurchase'),
                     'warexoDecimalPurchaseSteps' => $cartLineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
+                    '_warexoCoreMinPurchase' => $cartLineItem->getQuantityInformation()?->getMinPurchase(),
+                    '_warexoCoreMaxPurchase' => $cartLineItem->getQuantityInformation()?->getMaxPurchase(),
                 ]);
             }
         }
@@ -254,6 +257,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             'warexoDecimalMaxPurchase' => $extension->getMaxPurchase() ?? $this->resolveCalculatedMaxPurchase($product),
             'warexoDecimalPurchaseSteps' => $extension->getPurchaseSteps(),
             '_warexoCoreMinPurchase' => $product->getMinPurchase(),
+            '_warexoCoreMaxPurchase' => $extension->getMaxPurchase() !== null ? $product->getMaxPurchase() : $product->getCalculatedMaxPurchase(),
         ]);
     }
 

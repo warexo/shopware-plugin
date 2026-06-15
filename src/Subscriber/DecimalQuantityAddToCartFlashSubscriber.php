@@ -51,10 +51,6 @@ class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterfac
             return;
         }
 
-        if (!$flashBag->has('success')) {
-            return;
-        }
-
         $formatter = new \NumberFormatter($request->getLocale(), \NumberFormatter::DECIMAL);
         $formatter->setAttribute(\NumberFormatter::MIN_FRACTION_DIGITS, 0);
         $formatter->setAttribute(\NumberFormatter::MAX_FRACTION_DIGITS, 3);
@@ -64,8 +60,71 @@ class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterfac
             $formattedCount = rtrim(rtrim(number_format($decimalAddCount, 3, '.', ''), '0'), '.');
         }
 
-        $flashBag->set('success', [
-            $this->translator->trans('checkout.addToCartSuccess', ['%count%' => $formattedCount]),
-        ]);
+        $flashes = $flashBag->peekAll();
+        foreach ($flashes as $type => $messages) {
+            $rewrittenMessages = [];
+
+            foreach ($messages as $message) {
+                if (!is_string($message)) {
+                    $rewrittenMessages[] = $message;
+                    continue;
+                }
+
+                if ($type === 'success') {
+                    $message = $this->buildAddToCartSuccessMessage($decimalAddCount, $formattedCount);
+                }
+
+                $rewrittenMessages[] = $this->replaceScaledStockValues($message, DecimalQuantityRequestSubscriber::getDecimalPayloads($request), $formatter);
+            }
+
+            if ($rewrittenMessages !== $messages) {
+                $flashBag->set($type, $rewrittenMessages);
+            }
+        }
+    }
+
+    private function formatTranslationCount(float $count): string
+    {
+        return rtrim(rtrim(number_format($count, 3, '.', ''), '0'), '.');
+    }
+
+    private function buildAddToCartSuccessMessage(float $decimalAddCount, string $formattedCount): string
+    {
+        $translationCount = $this->formatTranslationCount($decimalAddCount);
+        $message = $this->translator->trans('checkout.addToCartSuccess', ['%count%' => $translationCount]);
+
+        if ($formattedCount === $translationCount) {
+            return $message;
+        }
+
+        return str_replace($translationCount, $formattedCount, $message);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $decimalPayloads
+     */
+    private function replaceScaledStockValues(string $message, array $decimalPayloads, \NumberFormatter $formatter): string
+    {
+        foreach ($decimalPayloads as $payload) {
+            $coreMaxPurchase = $payload['_warexoCoreMaxPurchase'] ?? null;
+            $decimalMaxPurchase = $payload['warexoDecimalMaxPurchase'] ?? null;
+
+            if ((!is_int($coreMaxPurchase) && !is_float($coreMaxPurchase)) || (!is_int($decimalMaxPurchase) && !is_float($decimalMaxPurchase))) {
+                continue;
+            }
+
+            $formattedMaxPurchase = $formatter->format((float) $decimalMaxPurchase);
+            if ($formattedMaxPurchase === false) {
+                $formattedMaxPurchase = $this->formatTranslationCount((float) $decimalMaxPurchase);
+            }
+
+            $message = preg_replace(
+                '/(?<![\d,.])' . preg_quote((string) (int) $coreMaxPurchase, '/') . '(?![\d,.])/',
+                $formattedMaxPurchase,
+                $message
+            ) ?? $message;
+        }
+
+        return $message;
     }
 }
