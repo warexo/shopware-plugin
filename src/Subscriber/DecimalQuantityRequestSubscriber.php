@@ -29,6 +29,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly DecimalQuantityFeatureDecider $featureDecider,
         private readonly DecimalQuantityRequestTransformer $requestTransformer,
+        private readonly DecimalQuantityMapper $quantityMapper,
         private readonly CartService $cartService,
         private readonly EntityRepository $productRepository,
         private readonly SalesChannelRepository $salesChannelProductRepository
@@ -160,6 +161,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
             $quantity = $this->normalizeRequestedQuantity($lineItem['quantity'] ?? null);
             if ($quantity !== null) {
+                $quantity = $this->normalizeScaledDefaultQuantity($quantity, $decimalPayload);
                 $quantity = $this->snapQuantityToPurchaseInterval(
                     $quantity,
                     $decimalPayload['warexoDecimalMinPurchase'] ?? null,
@@ -175,7 +177,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
                 continue;
             }
 
-            $payload = $decimalPayload;
+            $payload = $this->withoutInternalPayloadValues($decimalPayload);
             $payload['warexoDecimalQuantity'] = $transformed['decimalQuantity'];
 
             if (isset($lineItem['payload']) && is_array($lineItem['payload'])) {
@@ -251,6 +253,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             'warexoDecimalMinPurchase' => $extension->getMinPurchase(),
             'warexoDecimalMaxPurchase' => $extension->getMaxPurchase() ?? $this->resolveCalculatedMaxPurchase($product),
             'warexoDecimalPurchaseSteps' => $extension->getPurchaseSteps(),
+            '_warexoCoreMinPurchase' => $product->getMinPurchase(),
         ]);
     }
 
@@ -298,6 +301,54 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         return $payload;
+    }
+
+    /**
+     * Product listing add-to-cart buttons often submit product.minPurchase as a hidden
+     * value. In decimal mode that field is core-scaled, so turn only that exact default
+     * back into its decimal value before transforming the request for the cart.
+     *
+     * @param array<string, mixed> $decimalPayload
+     */
+    private function normalizeScaledDefaultQuantity(float $quantity, array $decimalPayload): float
+    {
+        $decimalMinPurchase = $this->normalizePositiveNumber($decimalPayload['warexoDecimalMinPurchase'] ?? null);
+        $coreMinPurchase = $this->normalizePositiveNumber($decimalPayload['_warexoCoreMinPurchase'] ?? null);
+
+        if ($decimalMinPurchase === null || $coreMinPurchase === null) {
+            return $quantity;
+        }
+
+        if (!$this->floatsEqual($coreMinPurchase, (float) $this->quantityMapper->toCoreQuantity($decimalMinPurchase))) {
+            return $quantity;
+        }
+
+        if (!$this->floatsEqual($quantity, $coreMinPurchase)) {
+            return $quantity;
+        }
+
+        return $decimalMinPurchase;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, mixed>
+     */
+    private function withoutInternalPayloadValues(array $payload): array
+    {
+        foreach (array_keys($payload) as $key) {
+            if (str_starts_with((string) $key, '_warexo')) {
+                unset($payload[$key]);
+            }
+        }
+
+        return $payload;
+    }
+
+    private function floatsEqual(float $left, float $right): bool
+    {
+        return abs($left - $right) < 0.0001;
     }
 
     /**

@@ -81,6 +81,10 @@
         <service id="Warexo\Subscriber\ProductPageCriteriaSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="Warexo\Subscriber\StorefrontProductCriteriaSubscriber">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
         <service id="Warexo\Subscriber\BeforeLineItemAddedSubscriber">
             <argument type="service" id="request_stack"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
@@ -90,6 +94,7 @@
         <service id="Warexo\Subscriber\DecimalQuantityRequestSubscriber">
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
             <argument type="service" id="product.repository"/>
             <argument type="service" id="sales_channel.product.repository"/>
