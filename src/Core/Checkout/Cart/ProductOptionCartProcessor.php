@@ -50,7 +50,8 @@ class ProductOptionCartProcessor implements CartProcessorInterface
                 $lineItem->setPayloadValue('warexoProductOptionSelections', $lineItemSelections);
             }
 
-            $isDecimalQuantity = $decimalQuantityEnabled
+            $isDecimalQuantity = $lineItem->isStackable()
+                && $decimalQuantityEnabled
                 && $this->requestTransformer->isTruthy($lineItem->getPayloadValue('warexoIsDecimalQuantity'));
 
             if (!$isDecimalQuantity && $lineItemSelections === []) {
@@ -266,6 +267,10 @@ class ProductOptionCartProcessor implements CartProcessorInterface
 
     private function synchronizeDecimalQuantityInformation(LineItem $lineItem): void
     {
+        if (!$lineItem->isStackable()) {
+            return;
+        }
+
         $existing = $lineItem->getQuantityInformation();
         $quantityInformation = new QuantityInformation();
 
