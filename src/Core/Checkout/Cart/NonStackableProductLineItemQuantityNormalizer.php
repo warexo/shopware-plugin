@@ -17,6 +17,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelContext;
 class NonStackableProductLineItemQuantityNormalizer implements CartDataCollectorInterface, CartProcessorInterface
 {
     private const DATA_KEY = 'warexoNonStackableProductLineItemOriginalQuantities';
+    private const SURCHARGE_QUANTITY_DATA_KEY_PREFIX = 'calculated-surcharge-';
 
     public function __construct(
         private readonly SalesChannelRepository $salesChannelProductRepository
@@ -76,14 +77,8 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
             return;
         }
 
-        foreach ($this->getNonStackableProductLineItems($original->getLineItems()) as $lineItem) {
-            $originalQuantity = $originalQuantities[$lineItem->getId()] ?? null;
-            if (!is_int($originalQuantity)) {
-                continue;
-            }
-
-            $this->setNonStackableQuantity($lineItem, $originalQuantity);
-        }
+        $this->restoreOriginalQuantities($data, $original->getLineItems(), $originalQuantities);
+        $this->restoreOriginalQuantities($data, $toCalculate->getLineItems(), $originalQuantities);
     }
 
     /**
@@ -102,6 +97,43 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
         }
 
         return $matches;
+    }
+
+    /**
+     * @param array<string, int> $originalQuantities
+     */
+    private function restoreOriginalQuantities(CartDataCollection $data, LineItemCollection $lineItems, array $originalQuantities): void
+    {
+        foreach ($this->getNonStackableProductLineItems($lineItems) as $lineItem) {
+            $quantity = $this->resolveRestoredQuantity($data, $lineItem, $originalQuantities);
+            if ($quantity === null) {
+                continue;
+            }
+
+            $this->setNonStackableQuantity($lineItem, $quantity);
+        }
+    }
+
+    /**
+     * @param array<string, int> $originalQuantities
+     */
+    private function resolveRestoredQuantity(CartDataCollection $data, LineItem $lineItem, array $originalQuantities): ?int
+    {
+        $surchargeQuantity = $data->get(self::SURCHARGE_QUANTITY_DATA_KEY_PREFIX . $lineItem->getId());
+        if (is_int($surchargeQuantity) && $surchargeQuantity > 0) {
+            return $surchargeQuantity;
+        }
+
+        if ($lineItem->hasPayloadValue('surcharge')) {
+            return null;
+        }
+
+        $originalQuantity = $originalQuantities[$lineItem->getId()] ?? null;
+        if (is_int($originalQuantity) && $originalQuantity > 0) {
+            return $originalQuantity;
+        }
+
+        return null;
     }
 
     private function setNonStackableQuantity(LineItem $lineItem, int $quantity): void
