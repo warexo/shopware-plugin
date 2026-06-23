@@ -174,7 +174,7 @@
         <service id="Warexo\Core\Checkout\Cart\NonStackableProductLineItemQuantityNormalizer">
             <argument type="service" id="sales_channel.product.repository"/>
             <tag name="shopware.cart.collector" priority="5001"/>
-            <tag name="shopware.cart.processor" priority="4998"/>
+            <tag name="shopware.cart.processor" priority="5050"/>
         </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartCollector">
             <argument type="service" id="product.repository"/>

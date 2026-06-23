@@ -62,7 +62,7 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
             }
 
             $originalQuantities[$lineItem->getId()] = $lineItem->getQuantity();
-            $this->setNonStackableQuantity($lineItem, $minPurchase);
+            $this->setQuantity($lineItem, $minPurchase);
         }
 
         if ($originalQuantities !== []) {
@@ -73,8 +73,8 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
     public function process(CartDataCollection $data, Cart $original, Cart $toCalculate, SalesChannelContext $context, CartBehavior $behavior): void
     {
         $originalQuantities = $data->get(self::DATA_KEY);
-        if (!is_array($originalQuantities) || $originalQuantities === []) {
-            return;
+        if (!is_array($originalQuantities)) {
+            $originalQuantities = [];
         }
 
         $this->restoreOriginalQuantities($data, $original->getLineItems(), $originalQuantities);
@@ -89,7 +89,7 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
         $matches = [];
 
         foreach ($lineItems as $lineItem) {
-            if ($lineItem->getType() === LineItem::PRODUCT_LINE_ITEM_TYPE && !$lineItem->isStackable()) {
+            if ($this->isNormalizableProductLineItem($lineItem)) {
                 $matches[] = $lineItem;
             }
 
@@ -97,6 +97,12 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
         }
 
         return $matches;
+    }
+
+    private function isNormalizableProductLineItem(LineItem $lineItem): bool
+    {
+        return $lineItem->getType() === LineItem::PRODUCT_LINE_ITEM_TYPE
+            && (!$lineItem->isStackable() || $lineItem->hasPayloadValue('surcharge'));
     }
 
     /**
@@ -110,7 +116,7 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
                 continue;
             }
 
-            $this->setNonStackableQuantity($lineItem, $quantity);
+            $this->setQuantity($lineItem, $quantity);
         }
     }
 
@@ -119,12 +125,12 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
      */
     private function resolveRestoredQuantity(CartDataCollection $data, LineItem $lineItem, array $originalQuantities): ?int
     {
-        $surchargeQuantity = $data->get(self::SURCHARGE_QUANTITY_DATA_KEY_PREFIX . $lineItem->getId());
-        if (is_int($surchargeQuantity) && $surchargeQuantity > 0) {
-            return $surchargeQuantity;
-        }
-
         if ($lineItem->hasPayloadValue('surcharge')) {
+            $surchargeQuantity = $data->get(self::SURCHARGE_QUANTITY_DATA_KEY_PREFIX . $lineItem->getId());
+            if (is_int($surchargeQuantity) && $surchargeQuantity > 0) {
+                return $surchargeQuantity;
+            }
+
             return null;
         }
 
@@ -141,5 +147,21 @@ class NonStackableProductLineItemQuantityNormalizer implements CartDataCollector
         $lineItem->setStackable(true);
         $lineItem->setQuantity($quantity);
         $lineItem->setStackable(false);
+    }
+
+    private function setQuantity(LineItem $lineItem, int $quantity): void
+    {
+        if ($lineItem->getQuantity() === $quantity) {
+            return;
+        }
+
+        if ($lineItem->hasPayloadValue('surcharge')) {
+            $lineItem->setStackable(true);
+            $lineItem->setQuantity($quantity);
+
+            return;
+        }
+
+        $this->setNonStackableQuantity($lineItem, $quantity);
     }
 }
