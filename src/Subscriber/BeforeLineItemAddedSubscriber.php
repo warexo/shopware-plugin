@@ -5,8 +5,12 @@ namespace Warexo\Subscriber;
 use Shopware\Core\Checkout\Cart\Event\BeforeLineItemAddedEvent;
 use Shopware\Core\Checkout\Cart\Event\BeforeLineItemQuantityChangedEvent;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
+use Shopware\Core\PlatformRequest;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer;
 
@@ -14,6 +18,7 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly RequestStack $requestStack,
+        private readonly DecimalQuantityFeatureDecider $featureDecider,
         private readonly DecimalQuantityMapper $quantityMapper,
         private readonly DecimalQuantityRequestTransformer $requestTransformer
     ) {
@@ -36,8 +41,6 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $decimalPayloads = DecimalQuantityRequestSubscriber::getDecimalPayloads($request);
-
         $lineItems = $request->request->all('lineItems');
 
         if (is_array($lineItems)) {
@@ -53,6 +56,12 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
                 $cart->add($lineItem);
             }
         }
+
+        if (!$this->isDecimalQuantityEnabled($request, $this->resolveEventSalesChannelContext($event))) {
+            return;
+        }
+
+        $decimalPayloads = DecimalQuantityRequestSubscriber::getDecimalPayloads($request);
 
         $cartLineItem = $event->getCart()->getLineItems()->get($lineItem->getId());
         if (!$cartLineItem instanceof LineItem) {
@@ -89,6 +98,10 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if (!$this->isDecimalQuantityEnabled($request, $this->resolveEventSalesChannelContext($event))) {
+            return;
+        }
+
         $decimalQuantity = $request->attributes->get('warexoDecimalQuantity');
         if (!is_float($decimalQuantity) && !is_int($decimalQuantity)) {
             return;
@@ -97,5 +110,30 @@ class BeforeLineItemAddedSubscriber implements EventSubscriberInterface
         $lineItem = $event->getLineItem();
         $lineItem->setPayloadValue('warexoIsDecimalQuantity', true);
         $lineItem->setPayloadValue('warexoDecimalQuantity', round((float) $decimalQuantity, DecimalQuantityMapper::SCALE));
+    }
+
+    private function isDecimalQuantityEnabled(Request $request, ?SalesChannelContext $salesChannelContext): bool
+    {
+        if ($salesChannelContext instanceof SalesChannelContext) {
+            return $this->featureDecider->isEnabled($salesChannelContext->getSalesChannelId());
+        }
+
+        $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
+        if ($context instanceof SalesChannelContext) {
+            return $this->featureDecider->isEnabled($context->getSalesChannelId());
+        }
+
+        return $this->featureDecider->isEnabled();
+    }
+
+    private function resolveEventSalesChannelContext(object $event): ?SalesChannelContext
+    {
+        if (!method_exists($event, 'getSalesChannelContext')) {
+            return null;
+        }
+
+        $context = $event->getSalesChannelContext();
+
+        return $context instanceof SalesChannelContext ? $context : null;
     }
 }

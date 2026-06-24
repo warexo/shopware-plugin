@@ -45,7 +45,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
     public function onKernelController(ControllerEvent $event): void
     {
-        if (!$event->isMainRequest() || !$this->featureDecider->isEnabled()) {
+        if (!$event->isMainRequest()) {
             return;
         }
 
@@ -53,6 +53,9 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         $route = $request->attributes->get('_route');
         $context = $request->attributes->get(PlatformRequest::ATTRIBUTE_SALES_CHANNEL_CONTEXT_OBJECT);
         $salesChannelContext = $context instanceof SalesChannelContext ? $context : null;
+        if (!$this->isEnabledForContext($salesChannelContext)) {
+            return;
+        }
 
         if ($route !== self::CHANGE_QUANTITY_ROUTE && $this->hasLineItemsPayload($request)) {
             $this->transformLineItems($request, $salesChannelContext);
@@ -489,5 +492,14 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         $lineItems = $request->request->all('lineItems');
 
         return is_array($lineItems) && $lineItems !== [];
+    }
+
+    private function isEnabledForContext(?SalesChannelContext $context): bool
+    {
+        if ($context instanceof SalesChannelContext) {
+            return $this->featureDecider->isEnabled($context->getSalesChannelId());
+        }
+
+        return $this->featureDecider->isEnabled();
     }
 }

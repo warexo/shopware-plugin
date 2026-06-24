@@ -87,6 +87,7 @@
         </service>
         <service id="Warexo\Subscriber\BeforeLineItemAddedSubscriber">
             <argument type="service" id="request_stack"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
             <tag name="kernel.event_subscriber"/>
