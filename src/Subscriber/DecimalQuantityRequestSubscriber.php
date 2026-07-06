@@ -183,9 +183,10 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             $requestPayload = $decimalPayload;
             $requestPayload['warexoDecimalQuantity'] = $transformed['decimalQuantity'];
             $payload = $this->withoutInternalPayloadValues($requestPayload);
+            $existingPayload = $this->normalizeLineItemPayload($lineItem['payload'] ?? null);
 
-            if (isset($lineItem['payload']) && is_array($lineItem['payload'])) {
-                $lineItem['payload'] = array_merge($lineItem['payload'], $payload);
+            if (is_array($existingPayload)) {
+                $lineItem['payload'] = array_merge($existingPayload, $payload);
             } elseif (!isset($lineItem['payload']) || (is_string($lineItem['payload']) && trim($lineItem['payload']) === '')) {
                 $lineItem['payload'] = $payload;
             }
@@ -251,7 +252,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         $extension = $product->getExtension('warexoExtension');
-        if (!$extension instanceof ProductExtensionEntity) {
+        if (!$extension instanceof ProductExtensionEntity || !$this->isDecimalExtension($extension)) {
             return null;
         }
 
@@ -310,6 +311,14 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         return $payload;
     }
 
+    private function isDecimalExtension(ProductExtensionEntity $extension): bool
+    {
+        return $extension->getStock() !== null
+            || $extension->getMinPurchase() !== null
+            || $extension->getMaxPurchase() !== null
+            || $extension->getPurchaseSteps() !== null;
+    }
+
     /**
      * Product listing add-to-cart buttons often submit product.minPurchase as a hidden
      * value. In decimal mode that field is core-scaled, so turn only that exact default
@@ -351,6 +360,29 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         return $payload;
+    }
+
+    /**
+     * @return array<string, mixed>|mixed
+     */
+    private function normalizeLineItemPayload(mixed $payload): mixed
+    {
+        if (is_array($payload) || !is_string($payload)) {
+            return $payload;
+        }
+
+        $payload = trim($payload);
+        if ($payload === '') {
+            return $payload;
+        }
+
+        try {
+            $decoded = json_decode($payload, true, 512, \JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            return $payload;
+        }
+
+        return is_array($decoded) ? $decoded : $payload;
     }
 
     private function floatsEqual(float $left, float $right): bool

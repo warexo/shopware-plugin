@@ -177,18 +177,25 @@
             <tag name="shopware.cart.collector" priority="5001"/>
             <tag name="shopware.cart.processor" priority="5050"/>
         </service>
+        <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartCollector">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
+            <argument type="service" id="sales_channel.product.repository"/>
+            <tag name="shopware.cart.collector" priority="5002"/>
+        </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartCollector">
             <argument type="service" id="product.repository"/>
-            <argument type="service" id="warexo_product_option.repository"/>
-            <argument type="service" id="sales_channel.product.repository"/>
             <tag name="shopware.cart.collector" priority="4901"/>
         </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
-            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
-            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
-            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
             <tag name="shopware.cart.processor" priority="4899"/>
+        </service>
+        <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartProcessor">
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <tag name="shopware.cart.processor" priority="4898"/>
         </service>
 
         <!-- cms data resolvers -->

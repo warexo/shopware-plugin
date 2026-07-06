@@ -8,53 +8,37 @@ use Shopware\Core\Checkout\Cart\CartDataCollectorInterface;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Content\Product\ProductEntity;
-use Shopware\Core\Content\Product\SalesChannel\SalesChannelProductEntity;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Warexo\Core\Content\ProductOption\Aggregate\ProductOptionValue\WarexoProductOptionValueEntity;
 use Warexo\Core\Content\ProductOption\WarexoProductOptionCollection;
 use Warexo\Core\Content\ProductOption\WarexoProductOptionEntity;
-use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
-use Shopware\Core\System\SalesChannel\Entity\SalesChannelRepository;
-use Shopware\Core\System\SalesChannel\SalesChannelContext;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 
 class ProductOptionCartCollector implements CartDataCollectorInterface
 {
     private EntityRepository $productRepository;
-    private EntityRepository $productOptionRepository;
-    private SalesChannelRepository $salesChannelProductRepository;
 
-    public function __construct(EntityRepository $productRepository, EntityRepository $productOptionRepository, SalesChannelRepository $salesChannelProductRepository)
+    public function __construct(EntityRepository $productRepository)
     {
         $this->productRepository = $productRepository;
-        $this->productOptionRepository = $productOptionRepository;
-        $this->salesChannelProductRepository = $salesChannelProductRepository;
     }
 
     public function collect(CartDataCollection $data, Cart $original, SalesChannelContext $context, CartBehavior $behavior): void
     {
-        if ($data->has('optionValueSelections')) {
-            return;
-        }
-
         $selections = [];
-        $businessUnitPrices = [];
 
         $lineItems = $original->getLineItems()->filterType(LineItem::PRODUCT_LINE_ITEM_TYPE);
 
         foreach ($lineItems as $lineItem) {
-            $businessUnitPrice = $this->getLineItemBusinessUnitPrice($lineItem, $context);
-            if ($businessUnitPrice !== null) {
-                $businessUnitPrices[$lineItem->getId()] = $businessUnitPrice;
+            $selectedOptions = $lineItem->getPayloadValue('warexoProductOptions');
+            if (!is_array($selectedOptions)) {
+                continue;
             }
 
             $product = $this->getLineItemProduct($lineItem, $context);
             $options = $product->getExtension('warexoProductOptions');
             if (!$options instanceof WarexoProductOptionCollection || count($options) === 0) {
-                continue;
-            }
-
-            $selectedOptions = $lineItem->getPayloadValue('warexoProductOptions');
-            if (!is_array($selectedOptions)) {
                 continue;
             }
 
@@ -83,7 +67,6 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
             }
         }
         $data->set('optionValueSelections', $selections);
-        $data->set('warexoBusinessUnitPrices', $businessUnitPrices);
     }
 
     private function getLineItemProduct(LineItem $lineItem, SalesChannelContext $context) : ProductEntity
@@ -97,27 +80,6 @@ class ProductOptionCartCollector implements CartDataCollectorInterface
         }
 
         throw new \RuntimeException('Line item has no product');
-    }
-
-    private function getLineItemBusinessUnitPrice(LineItem $lineItem, SalesChannelContext $context): ?float
-    {
-        $referencedId = $lineItem->getReferencedId();
-        if ($referencedId === null) {
-            return null;
-        }
-
-        $criteria = new Criteria([$referencedId]);
-        $product = $this->salesChannelProductRepository->search($criteria, $context)->first();
-        if (!$product instanceof SalesChannelProductEntity) {
-            return null;
-        }
-
-        $calculatedPrice = $product->getCalculatedPrice();
-        if ($calculatedPrice === null) {
-            return null;
-        }
-
-        return (float) $calculatedPrice->getUnitPrice();
     }
 
     private function resolveSelectedOptionValue(WarexoProductOptionEntity $option, mixed $selectedValueId): ?WarexoProductOptionValueEntity
