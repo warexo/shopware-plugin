@@ -50,6 +50,8 @@ class OrderLoadedSubscriber implements EventSubscriberInterface
                     $customFields['amazonshipservicelevel'] = $magnaDetails['ShipServiceLevel'];
                 }else if($magnaData[$order->get('id')]['platform'] === 'ebay') {
                     $customFields['ebayorderid'] = $magnaData[$order->get('id')]['order_id'];
+                }else if($magnaData[$order->get('id')]['platform'] === 'hood') {
+                    $customFields['hoodorderid'] = $magnaData[$order->get('id')]['order_id'];
                 }
                 $order->setCustomFields($customFields);
             }
