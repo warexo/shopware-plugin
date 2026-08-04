@@ -190,12 +190,16 @@
         </service>
         <service id="Warexo\Core\Checkout\Cart\ProductOptionCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
-            <tag name="shopware.cart.processor" priority="4899"/>
+            <tag name="shopware.cart.processor" priority="4991"/>
         </service>
         <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
-            <tag name="shopware.cart.processor" priority="4898"/>
+            <tag name="shopware.cart.processor" priority="4990"/>
+        </service>
+        <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartPriceNormalizer">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <tag name="shopware.cart.processor" priority="4800"/>
         </service>
 
         <!-- cms data resolvers -->

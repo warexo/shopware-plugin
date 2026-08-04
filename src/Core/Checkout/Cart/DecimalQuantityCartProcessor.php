@@ -10,11 +10,8 @@ use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\LineItem\QuantityInformation;
 use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
-use Shopware\Core\Checkout\Cart\Price\Struct\ListPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
-use Shopware\Core\Checkout\Cart\Price\Struct\ReferencePrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\ReferencePriceDefinition;
-use Shopware\Core\Checkout\Cart\Price\Struct\RegulationPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
@@ -56,7 +53,11 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
             $this->copyPriceDefinitionMetadata($lineItem->getPriceDefinition(), $definition, $lineItemData);
 
             $calculated = $this->calculator->calculate($definition, $context);
-            $lineItem->setPrice($this->normalizeCalculatedPrice($lineItemData, $calculated, $definition, $normalizedUnitPrice));
+            $lineItem->setPrice($this->correctInternalCalculatedPrice(
+                $lineItemData,
+                $calculated,
+                $normalizedUnitPrice
+            ));
             $lineItem->setPriceDefinition($definition);
         }
     }
@@ -194,9 +195,13 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
     }
 
     /**
+     * Shopware rounds the scaled unit price to currency precision before multiplying it by
+     * the core quantity. Keep the internal price self-consistent for quantity splitting and
+     * promotion calculation, while retaining the exact decimal total.
+     *
      * @param array<string, mixed> $lineItemData
      */
-    private function normalizeCalculatedPrice(array $lineItemData, CalculatedPrice $price, QuantityPriceDefinition $definition, float $normalizedUnitPrice): CalculatedPrice
+    private function correctInternalCalculatedPrice(array $lineItemData, CalculatedPrice $price, float $normalizedUnitPrice): CalculatedPrice
     {
         $decimalQuantity = $this->getFloat($lineItemData['decimalQuantity'] ?? null);
         if ($decimalQuantity === null) {
@@ -204,61 +209,20 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
             $decimalQuantity = $this->quantityMapper->fromCoreQuantity($coreQuantity);
         }
 
-        $normalizedTotalPrice = round($normalizedUnitPrice * $decimalQuantity, DecimalQuantityMapper::SCALE + 2);
-        $taxFactor = $price->getTotalPrice() !== 0.0 ? $normalizedTotalPrice / $price->getTotalPrice() : 1.0;
+        $internalUnitPrice = $this->quantityMapper->toCoreUnitPrice($normalizedUnitPrice);
+        $exactTotalPrice = round($normalizedUnitPrice * $decimalQuantity, DecimalQuantityMapper::SCALE + 2);
+        $taxFactor = $price->getTotalPrice() !== 0.0 ? $exactTotalPrice / $price->getTotalPrice() : 1.0;
 
         return new CalculatedPrice(
-            $normalizedUnitPrice,
-            $normalizedTotalPrice,
+            $internalUnitPrice,
+            $exactTotalPrice,
             $this->cloneCalculatedTaxes($price->getCalculatedTaxes(), $taxFactor),
             $price->getTaxRules(),
             $price->getQuantity(),
-            $this->normalizeReferencePrice($price->getReferencePrice(), $normalizedUnitPrice),
-            $this->normalizeListPrice($price, $definition, $normalizedUnitPrice),
-            $this->normalizeRegulationPrice($definition)
+            $price->getReferencePrice(),
+            $price->getListPrice(),
+            $price->getRegulationPrice()
         );
-    }
-
-    private function normalizeReferencePrice(?ReferencePrice $referencePrice, float $normalizedUnitPrice): ?ReferencePrice
-    {
-        if ($referencePrice === null) {
-            return null;
-        }
-
-        $purchaseUnit = $referencePrice->getPurchaseUnit();
-        $referenceUnit = $referencePrice->getReferenceUnit();
-        if ($purchaseUnit <= 0.0 || $referenceUnit <= 0.0) {
-            return null;
-        }
-
-        return new ReferencePrice(
-            round($normalizedUnitPrice / $purchaseUnit * $referenceUnit, DecimalQuantityMapper::SCALE + 2),
-            $purchaseUnit,
-            $referenceUnit,
-            $referencePrice->getUnitName()
-        );
-    }
-
-    private function normalizeListPrice(CalculatedPrice $price, QuantityPriceDefinition $definition, float $normalizedUnitPrice): ?ListPrice
-    {
-        if ($price->getListPrice() === null || $definition->getListPrice() === null) {
-            return null;
-        }
-
-        return ListPrice::createFromUnitPrice(
-            $normalizedUnitPrice,
-            $this->quantityMapper->fromCoreUnitPrice($definition->getListPrice())
-        );
-    }
-
-    private function normalizeRegulationPrice(QuantityPriceDefinition $definition): ?RegulationPrice
-    {
-        $regulationPrice = $definition->getRegulationPrice();
-        if ($regulationPrice === null) {
-            return null;
-        }
-
-        return new RegulationPrice($this->quantityMapper->fromCoreUnitPrice($regulationPrice));
     }
 
     private function cloneCalculatedTaxes(CalculatedTaxCollection $calculatedTaxes, float $factor): CalculatedTaxCollection
