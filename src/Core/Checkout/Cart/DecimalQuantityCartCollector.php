@@ -163,12 +163,13 @@ class DecimalQuantityCartCollector implements CartDataCollectorInterface
             return $product->getCalculatedPrice();
         }
 
-        $price = $product->getCalculatedPrice();
+        $price = $prices->first() ?? $product->getCalculatedPrice();
         foreach ($prices as $tierPrice) {
-            $price = $tierPrice;
-            if ($decimalQuantity <= $tierPrice->getQuantity()) {
+            if ($decimalQuantity < $tierPrice->getQuantity()) {
                 break;
             }
+
+            $price = $tierPrice;
         }
 
         return $price;

@@ -10,10 +10,11 @@ use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\LineItem\QuantityInformation;
 use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
+use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
 use Shopware\Core\Checkout\Cart\Price\Struct\ReferencePriceDefinition;
-use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTax;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
+use Shopware\Core\Checkout\Cart\Tax\TaxCalculator;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 
@@ -21,7 +22,8 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
 {
     public function __construct(
         private readonly QuantityPriceCalculator $calculator,
-        private readonly DecimalQuantityMapper $quantityMapper
+        private readonly DecimalQuantityMapper $quantityMapper,
+        private readonly TaxCalculator $taxCalculator
     ) {
     }
 
@@ -56,7 +58,8 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
             $lineItem->setPrice($this->correctInternalCalculatedPrice(
                 $lineItemData,
                 $calculated,
-                $normalizedUnitPrice
+                $normalizedUnitPrice,
+                $context
             ));
             $lineItem->setPriceDefinition($definition);
         }
@@ -201,7 +204,12 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
      *
      * @param array<string, mixed> $lineItemData
      */
-    private function correctInternalCalculatedPrice(array $lineItemData, CalculatedPrice $price, float $normalizedUnitPrice): CalculatedPrice
+    private function correctInternalCalculatedPrice(
+        array $lineItemData,
+        CalculatedPrice $price,
+        float $normalizedUnitPrice,
+        SalesChannelContext $context
+    ): CalculatedPrice
     {
         $decimalQuantity = $this->getFloat($lineItemData['decimalQuantity'] ?? null);
         if ($decimalQuantity === null) {
@@ -211,12 +219,11 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
 
         $internalUnitPrice = $this->quantityMapper->toCoreUnitPrice($normalizedUnitPrice);
         $exactTotalPrice = round($normalizedUnitPrice * $decimalQuantity, DecimalQuantityMapper::SCALE + 2);
-        $taxFactor = $price->getTotalPrice() !== 0.0 ? $exactTotalPrice / $price->getTotalPrice() : 1.0;
 
         return new CalculatedPrice(
             $internalUnitPrice,
             $exactTotalPrice,
-            $this->cloneCalculatedTaxes($price->getCalculatedTaxes(), $taxFactor),
+            $this->calculateExactTaxes($exactTotalPrice, $price, $context),
             $price->getTaxRules(),
             $price->getQuantity(),
             $price->getReferencePrice(),
@@ -225,19 +232,21 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
         );
     }
 
-    private function cloneCalculatedTaxes(CalculatedTaxCollection $calculatedTaxes, float $factor): CalculatedTaxCollection
+    private function calculateExactTaxes(
+        float $exactTotalPrice,
+        CalculatedPrice $price,
+        SalesChannelContext $context
+    ): CalculatedTaxCollection
     {
-        $cloned = new CalculatedTaxCollection();
-
-        foreach ($calculatedTaxes as $calculatedTax) {
-            $cloned->add(new CalculatedTax(
-                $calculatedTax->getTax() * $factor,
-                $calculatedTax->getTaxRate(),
-                $calculatedTax->getPrice() * $factor
-            ));
+        if ($context->getTaxState() === CartPrice::TAX_STATE_FREE) {
+            return new CalculatedTaxCollection();
         }
 
-        return $cloned;
+        if ($context->getTaxState() === CartPrice::TAX_STATE_GROSS) {
+            return $this->taxCalculator->calculateGrossTaxes($exactTotalPrice, $price->getTaxRules());
+        }
+
+        return $this->taxCalculator->calculateNetTaxes($exactTotalPrice, $price->getTaxRules());
     }
 
     private function getFloat(mixed $value): ?float
