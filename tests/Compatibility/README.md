@@ -6,9 +6,12 @@ second calculation pass to detect processor-order drift.
 
 The default deterministic fixture IDs are:
 
-- `c0dec0dec0dec0dec0dec0dec0de5001`: decimal product, 19% VAT, EUR 0.89 below
-  quantity 10 and EUR 0.79 from quantity 10
+- `c0dec0dec0dec0dec0dec0dec0de5001`: decimal product, 19% VAT, EUR 0.99 base,
+  EUR 0.89 below quantity 10, and EUR 0.79 from quantity 10. The distinct base
+  makes an ignored tier immediately visible.
 - `c0dec0dec0dec0dec0dec0dec0de4001`: normal product, 19% VAT, EUR 99.99
+- `c0dec0dec0dec0dec0dec0dec0de5005`: standard integer product without a
+  Warexo extension, with the same EUR 0.99/EUR 0.89/EUR 0.79 price structure
 - `019f41cda01d71188864657fdda6b480`: CMS section containing a custom form
   option with a EUR 10.00 unit surcharge
 
@@ -32,7 +35,9 @@ The access key is discovered from Dockware's database. It can be overridden
 with `SHOPWARE_ACCESS_KEY`; fixture IDs and `SHOPWARE_BASE_URL` are also
 configurable through environment variables of the same names. When CMS Extras
 is active, the script additionally verifies its AJAX price endpoint and the
-same custom-form surcharge in the persisted cart pipeline.
+same custom-form surcharge in the persisted cart pipeline. AJAX assertions
+cover fractional totals on both sides of the tier boundary and compare the
+currency-rounded gross, net, and tax values with the cart.
 
 `promotion-tier-matrix.sh` activates the deterministic automatic 10% promotion
 fixture, verifies the historical EUR 99.99 decimal case, then verifies the low

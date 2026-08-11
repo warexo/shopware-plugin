@@ -1,0 +1,79 @@
+{% block sw_promotion_v2_individual_codes_behavior_grid_redeemed_icon_true %}
+<mt-icon
+    v-if="warexoIsRedeemed(item)"
+    class="sw-promotion-v2-individual-codes-behavior__redeemed-state is--active"
+    name="regular-checkmark-xs"
+    size="16px"
+/>
+{% endblock %}
+
+{% block sw_promotion_v2_individual_codes_behavior_grid_redeemed_icon_false %}
+<mt-icon
+    v-else
+    class="sw-promotion-v2-individual-codes-behavior__redeemed-state is--inactive"
+    name="regular-times-s"
+    size="16px"
+/>
+{% endblock %}
+
+{% block sw_promotion_v2_individual_codes_behavior_grid_created_at %}
+<template #column-payload.restValue="{ item }">
+    {{ warexoGetRestValue(item) }}
+</template>
+
+{% parent %}
+{% endblock %}
+
+{% block sw_promotion_v2_individual_codes_behavior_grid_actions_delete %}
+<sw-context-menu-item
+    class="sw-promotion-v2-individual-codes-behavior__rest-value-edit-action"
+    :disabled="!acl.can('promotion.editor')"
+    @click="warexoOpenRestValueModal(item)"
+>
+    {{ $t('warexo.promotion.individualCodes.editRestValue') }}
+</sw-context-menu-item>
+
+{% parent %}
+{% endblock %}
+
+{% block sw_promotion_v2_individual_codes_behavior_grid_action_delete_modal %}
+<sw-modal
+    v-if="warexoRestValueEditItem && warexoRestValueEditItem.id === item.id"
+    class="sw-promotion-v2-individual-codes-behavior__rest-value-modal"
+    variant="small"
+    :title="$t('warexo.promotion.individualCodes.editRestValue')"
+    @modal-close="warexoCloseRestValueModal"
+>
+    <mt-number-field
+        v-model="warexoRestValueDraft"
+        name="sw-field--warexo-rest-value"
+        number-type="float"
+        :digits="2"
+        :step="0.01"
+        :min="0"
+        :allow-empty="true"
+        :label="$t('warexo.promotion.individualCodes.restValue')"
+    />
+
+    <template #modal-footer>
+        <mt-button
+            size="small"
+            variant="secondary"
+            @click="warexoCloseRestValueModal"
+        >
+            {{ $t('global.default.cancel') }}
+        </mt-button>
+        <sw-button-process
+            size="small"
+            variant="primary"
+            :is-loading="warexoRestValueSaving"
+            :process-success="false"
+            @click="warexoSaveRestValue"
+        >
+            {{ $t('global.default.save') }}
+        </sw-button-process>
+    </template>
+</sw-modal>
+
+{% parent %}
+{% endblock %}

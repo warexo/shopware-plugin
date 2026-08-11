@@ -71,6 +71,10 @@
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
         </service>
+        <service id="Warexo\Core\Checkout\Promotion\Gateway\RestValuePromotionGateway"
+                 decorates="Shopware\Core\Checkout\Promotion\Gateway\PromotionGateway">
+            <argument type="service" id="Warexo\Core\Checkout\Promotion\Gateway\RestValuePromotionGateway.inner"/>
+        </service>
         <service id="Warexo\Elasticsearch\Product\ProductEsDecorator" decorates="Shopware\Elasticsearch\Product\ElasticsearchProductDefinition">
             <argument type="service" id="Warexo\Elasticsearch\Product\ProductEsDecorator.inner"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
@@ -137,6 +141,10 @@
         </service>
         <service id="Warexo\Subscriber\NavigationLoadedSubscriber">
             <argument type="service" id="media.repository"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="Warexo\Subscriber\RestValuePromotionCodeRedeemer">
+            <argument type="service" id="promotion_individual_code.repository"/>
             <tag name="kernel.event_subscriber"/>
         </service>
 
@@ -206,6 +214,10 @@
         <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartPriceNormalizer">
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <tag name="shopware.cart.processor" priority="4800"/>
+        </service>
+        <service id="Warexo\Core\Checkout\Promotion\Cart\RestValuePromotionCollector">
+            <argument type="service" id="promotion_individual_code.repository"/>
+            <tag name="shopware.cart.collector" priority="4899"/>
         </service>
 
         <!-- cms data resolvers -->
