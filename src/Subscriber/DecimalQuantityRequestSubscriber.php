@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider;
+use Warexo\Core\Content\Product\Quantity\DecimalQuantityIntervalCalculator;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer;
 use Warexo\Extension\Content\Product\ProductExtensionEntity;
@@ -30,6 +31,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         private readonly DecimalQuantityFeatureDecider $featureDecider,
         private readonly DecimalQuantityRequestTransformer $requestTransformer,
         private readonly DecimalQuantityMapper $quantityMapper,
+        private readonly DecimalQuantityIntervalCalculator $intervalCalculator,
         private readonly CartService $cartService,
         private readonly EntityRepository $productRepository,
         private readonly SalesChannelRepository $salesChannelProductRepository
@@ -125,7 +127,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
     /**
      * @param array<mixed> $lineItems
-     * @param array<string, array<string, float|bool|string>> $decimalPayloads
+     * @param array<string, array<string, float|bool>> $decimalPayloads
      *
      * @return array<mixed>
      */
@@ -165,7 +167,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             $quantity = $this->normalizeRequestedQuantity($lineItem['quantity'] ?? null);
             if ($quantity !== null) {
                 $quantity = $this->normalizeScaledDefaultQuantity($quantity, $decimalPayload);
-                $quantity = $this->snapQuantityToPurchaseInterval(
+                $quantity = $this->intervalCalculator->snap(
                     $quantity,
                     $decimalPayload['warexoDecimalMinPurchase'] ?? null,
                     $decimalPayload['warexoDecimalPurchaseSteps'] ?? null,
@@ -221,7 +223,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, float|bool|string>|null
+     * @return array<string, float|bool>|null
      */
     private function resolveDecimalPayload(?string $lineItemId, ?string $productId, ?SalesChannelContext $context): ?array
     {
@@ -238,7 +240,6 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
                     'warexoDecimalPurchaseSteps' => $cartLineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
                     '_warexoCoreMinPurchase' => $cartLineItem->getQuantityInformation()?->getMinPurchase(),
                     '_warexoCoreMaxPurchase' => $cartLineItem->getQuantityInformation()?->getMaxPurchase(),
-                    '_warexoProductName' => $cartLineItem->getLabel(),
                 ]);
             }
         }
@@ -263,7 +264,6 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             'warexoDecimalPurchaseSteps' => $extension->getPurchaseSteps(),
             '_warexoCoreMinPurchase' => $product->getMinPurchase(),
             '_warexoCoreMaxPurchase' => $extension->getMaxPurchase() !== null ? $product->getMaxPurchase() : $product->getCalculatedMaxPurchase(),
-            '_warexoProductName' => $product->getTranslation('name'),
         ]);
     }
 
@@ -296,7 +296,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
     /**
      * @param array<string, mixed> $values
      *
-     * @return array<string, float|bool|string>
+     * @return array<string, float|bool>
      */
     private function buildDecimalPayload(array $values): array
     {
@@ -307,10 +307,6 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         foreach ($values as $key => $value) {
             if (is_float($value) || is_int($value)) {
                 $payload[$key] = (float) $value;
-            }
-
-            if (str_starts_with($key, '_warexo') && is_string($value)) {
-                $payload[$key] = $value;
             }
         }
 
@@ -406,7 +402,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             return null;
         }
 
-        $quantity = $this->snapQuantityToPurchaseInterval(
+        $quantity = $this->intervalCalculator->snap(
             $quantity,
             $lineItem->getPayloadValue('warexoDecimalMinPurchase'),
             $lineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
@@ -424,7 +420,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         $quantityInformation = $lineItem->getQuantityInformation();
-        $quantity = $this->snapQuantityToPurchaseInterval(
+        $quantity = $this->intervalCalculator->snap(
             $quantity,
             $quantityInformation?->getMinPurchase(),
             $quantityInformation?->getPurchaseSteps(),
@@ -450,7 +446,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             return null;
         }
 
-        $quantity = $this->snapQuantityToPurchaseInterval(
+        $quantity = $this->intervalCalculator->snap(
             $quantity,
             $product->get('minPurchase'),
             $product->get('purchaseSteps'),
@@ -476,26 +472,6 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         }
 
         return (float) $normalized;
-    }
-
-    private function snapQuantityToPurchaseInterval(float $quantity, mixed $minPurchase, mixed $purchaseSteps, mixed $maxPurchase): float
-    {
-        $minPurchase = $this->normalizePositiveNumber($minPurchase) ?? 1.0;
-        $purchaseSteps = $this->normalizePositiveNumber($purchaseSteps) ?? 1.0;
-        $maxPurchase = $this->normalizePositiveNumber($maxPurchase);
-
-        $steps = round(($quantity - $minPurchase) / $purchaseSteps);
-        $quantity = $minPurchase + ($steps * $purchaseSteps);
-        $quantity = max($minPurchase, $quantity);
-
-        if ($maxPurchase !== null) {
-            $maxPurchase = max($minPurchase, $maxPurchase);
-            if ($quantity > $maxPurchase) {
-                $quantity = $minPurchase + (floor(($maxPurchase - $minPurchase) / $purchaseSteps) * $purchaseSteps);
-            }
-        }
-
-        return $quantity;
     }
 
     private function normalizePositiveNumber(mixed $value): ?float

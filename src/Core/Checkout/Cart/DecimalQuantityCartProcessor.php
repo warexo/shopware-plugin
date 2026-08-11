@@ -15,7 +15,9 @@ use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
 use Shopware\Core\Checkout\Cart\Price\Struct\ReferencePriceDefinition;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
 use Shopware\Core\Checkout\Cart\Tax\TaxCalculator;
+use Shopware\Core\Content\Product\Cart\ProductStockReachedError;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Warexo\Core\Checkout\Cart\Error\DecimalProductStockReachedError;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 
 class DecimalQuantityCartProcessor implements CartProcessorInterface
@@ -39,12 +41,16 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
                 continue;
             }
 
+            $lineItemData['coreQuantity'] = $lineItem->getQuantity();
+            $lineItemData['decimalQuantity'] = $this->quantityMapper->fromCoreQuantity($lineItem->getQuantity());
+
+            $this->synchronizeLineItem($lineItem, $lineItemData);
+            $this->replaceProductStockReachedError($toCalculate, $lineItem);
+
             $price = $lineItem->getPrice();
             if (!$price instanceof CalculatedPrice) {
                 continue;
             }
-
-            $this->synchronizeLineItem($lineItem, $lineItemData);
 
             $normalizedUnitPrice = $this->resolveNormalizedUnitPrice($data, $lineItem, $lineItemData);
             $definition = new QuantityPriceDefinition(
@@ -63,6 +69,26 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
             ));
             $lineItem->setPriceDefinition($definition);
         }
+    }
+
+    private function replaceProductStockReachedError(Cart $cart, LineItem $lineItem): void
+    {
+        $referencedId = $lineItem->getReferencedId();
+        if ($referencedId === null) {
+            return;
+        }
+
+        $error = $cart->getErrors()->get('product-stock-reached' . $referencedId);
+        if (!$error instanceof ProductStockReachedError) {
+            return;
+        }
+
+        $cart->addErrors(new DecimalProductStockReachedError(
+            $referencedId,
+            $error->getName(),
+            $this->quantityMapper->fromCoreQuantity($error->getQuantity()),
+            $error->isPersistent()
+        ));
     }
 
     /**

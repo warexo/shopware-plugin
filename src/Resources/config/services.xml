@@ -25,6 +25,9 @@
         </service>
         <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
         <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityValidator"/>
+        <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityIntervalCalculator">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+        </service>
         <service id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer">
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityValidator"/>
@@ -100,6 +103,7 @@
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityIntervalCalculator"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\SalesChannel\CartService"/>
             <argument type="service" id="product.repository"/>
             <argument type="service" id="sales_channel.product.repository"/>
@@ -107,7 +111,6 @@
         </service>
         <service id="Warexo\Subscriber\DecimalQuantityAddToCartFlashSubscriber">
             <argument type="service" id="translator"/>
-            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Subscriber\CartConvertedSubscriber">
@@ -211,6 +214,11 @@
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <argument type="service" id="Shopware\Core\Checkout\Cart\Tax\TaxCalculator"/>
             <tag name="shopware.cart.processor" priority="4990"/>
+        </service>
+        <service id="Warexo\Core\Checkout\Cart\DecimalProductStockErrorValidator">
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityRequestTransformer"/>
+            <tag name="shopware.cart.validator" priority="-100"/>
         </service>
         <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartPriceNormalizer">
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
