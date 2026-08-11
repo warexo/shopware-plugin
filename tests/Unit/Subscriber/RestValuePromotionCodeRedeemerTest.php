@@ -2,6 +2,7 @@
 
 namespace Warexo\Tests\Unit\Subscriber;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
 use Shopware\Core\Checkout\Cart\Tax\Struct\CalculatedTaxCollection;
@@ -17,7 +18,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\EntitySearchResult;
 use Warexo\Subscriber\RestValuePromotionCodeRedeemer;
 
-class RestValuePromotionCodeRedeemerTest extends TestCase
+#[CoversClass(RestValuePromotionCodeRedeemer::class)]
+final class RestValuePromotionCodeRedeemerTest extends TestCase
 {
     private const CODE_ID = 'c0dec0dec0dec0dec0dec0dec0de9204';
     private const ORDER_ID = 'c0dec0dec0dec0dec0dec0dec0de9210';

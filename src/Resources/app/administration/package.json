@@ -1,0 +1,16 @@
+{
+    "name": "warexo-administration",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Administration assets and unit tests for the Warexo plugin",
+    "scripts": {
+        "unit": "jest --config jest.config.mjs --ci",
+        "unit:watch": "jest --config jest.config.mjs --watch"
+    },
+    "devDependencies": {
+        "@babel/preset-env": "^7.29.0",
+        "@shopware-ag/jest-preset-sw6-admin": "^6.0.6",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0"
+    }
+}
