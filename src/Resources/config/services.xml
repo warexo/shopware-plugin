@@ -107,6 +107,7 @@
         </service>
         <service id="Warexo\Subscriber\DecimalQuantityAddToCartFlashSubscriber">
             <argument type="service" id="translator"/>
+            <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Subscriber\CartConvertedSubscriber">

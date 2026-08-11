@@ -125,7 +125,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
 
     /**
      * @param array<mixed> $lineItems
-     * @param array<string, array<string, float|bool>> $decimalPayloads
+     * @param array<string, array<string, float|bool|string>> $decimalPayloads
      *
      * @return array<mixed>
      */
@@ -221,7 +221,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * @return array<string, float|bool>|null
+     * @return array<string, float|bool|string>|null
      */
     private function resolveDecimalPayload(?string $lineItemId, ?string $productId, ?SalesChannelContext $context): ?array
     {
@@ -238,6 +238,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
                     'warexoDecimalPurchaseSteps' => $cartLineItem->getPayloadValue('warexoDecimalPurchaseSteps'),
                     '_warexoCoreMinPurchase' => $cartLineItem->getQuantityInformation()?->getMinPurchase(),
                     '_warexoCoreMaxPurchase' => $cartLineItem->getQuantityInformation()?->getMaxPurchase(),
+                    '_warexoProductName' => $cartLineItem->getLabel(),
                 ]);
             }
         }
@@ -262,6 +263,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
             'warexoDecimalPurchaseSteps' => $extension->getPurchaseSteps(),
             '_warexoCoreMinPurchase' => $product->getMinPurchase(),
             '_warexoCoreMaxPurchase' => $extension->getMaxPurchase() !== null ? $product->getMaxPurchase() : $product->getCalculatedMaxPurchase(),
+            '_warexoProductName' => $product->getTranslation('name'),
         ]);
     }
 
@@ -294,7 +296,7 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
     /**
      * @param array<string, mixed> $values
      *
-     * @return array<string, float|bool>
+     * @return array<string, float|bool|string>
      */
     private function buildDecimalPayload(array $values): array
     {
@@ -305,6 +307,10 @@ class DecimalQuantityRequestSubscriber implements EventSubscriberInterface
         foreach ($values as $key => $value) {
             if (is_float($value) || is_int($value)) {
                 $payload[$key] = (float) $value;
+            }
+
+            if (str_starts_with($key, '_warexo') && is_string($value)) {
+                $payload[$key] = $value;
             }
         }
 

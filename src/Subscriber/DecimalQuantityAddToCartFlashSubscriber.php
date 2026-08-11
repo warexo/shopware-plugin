@@ -8,13 +8,16 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 
 class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterface
 {
     private const ADD_ROUTE = 'frontend.checkout.line-item.add';
+    private const STOCK_QUANTITY_PLACEHOLDER = '__WAREXO_STOCK_QUANTITY__';
 
     public function __construct(
-        private readonly TranslatorInterface $translator
+        private readonly TranslatorInterface $translator,
+        private readonly DecimalQuantityMapper $quantityMapper
     ) {
     }
 
@@ -106,23 +109,41 @@ class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterfac
     private function replaceScaledStockValues(string $message, array $decimalPayloads, \NumberFormatter $formatter): string
     {
         foreach ($decimalPayloads as $payload) {
-            $coreMaxPurchase = $payload['_warexoCoreMaxPurchase'] ?? null;
-            $decimalMaxPurchase = $payload['warexoDecimalMaxPurchase'] ?? null;
-
-            if ((!is_int($coreMaxPurchase) && !is_float($coreMaxPurchase)) || (!is_int($decimalMaxPurchase) && !is_float($decimalMaxPurchase))) {
+            $productName = $payload['_warexoProductName'] ?? null;
+            if (!is_string($productName) || $productName === '') {
                 continue;
             }
 
-            $formattedMaxPurchase = $formatter->format((float) $decimalMaxPurchase);
-            if ($formattedMaxPurchase === false) {
-                $formattedMaxPurchase = $this->formatTranslationCount((float) $decimalMaxPurchase);
+            $stockMessageTemplate = $this->translator->trans('checkout.product-stock-reached', [
+                '%name%' => $productName,
+                '%quantity%' => self::STOCK_QUANTITY_PLACEHOLDER,
+            ]);
+            if (!str_contains($stockMessageTemplate, self::STOCK_QUANTITY_PLACEHOLDER)) {
+                continue;
             }
 
-            $message = preg_replace(
-                '/(?<![\d,.])' . preg_quote((string) (int) $coreMaxPurchase, '/') . '(?![\d,.])/',
-                $formattedMaxPurchase,
-                $message
-            ) ?? $message;
+            $pattern = '/^' . str_replace(
+                preg_quote(self::STOCK_QUANTITY_PLACEHOLDER, '/'),
+                '(?<quantity>\d+)',
+                preg_quote($stockMessageTemplate, '/')
+            ) . '$/u';
+
+            if (preg_match($pattern, $message, $matches) !== 1) {
+                continue;
+            }
+
+            $coreQuantity = $matches['quantity'] ?? null;
+            if (!is_string($coreQuantity)) {
+                continue;
+            }
+
+            $decimalQuantity = $this->quantityMapper->fromCoreQuantity((int) $coreQuantity);
+            $formattedQuantity = $formatter->format($decimalQuantity);
+            if ($formattedQuantity === false) {
+                $formattedQuantity = $this->formatTranslationCount($decimalQuantity);
+            }
+
+            return str_replace(self::STOCK_QUANTITY_PLACEHOLDER, $formattedQuantity, $stockMessageTemplate);
         }
 
         return $message;
