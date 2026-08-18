@@ -12,6 +12,10 @@ The default deterministic fixture IDs are:
 - `c0dec0dec0dec0dec0dec0dec0de4001`: normal product, 19% VAT, EUR 99.99
 - `c0dec0dec0dec0dec0dec0dec0de5005`: standard integer product without a
   Warexo extension, with the same EUR 0.99/EUR 0.89/EUR 0.79 price structure
+- `c0dec0dec0dec0dec0dec0dec0de5010`: decimal product with a 0.001 purchase
+  step and adjacent ranges at EUR 0.99 for 1-4.999, EUR 0.85 from 5, EUR 0.69
+  from 10, and EUR 0.59 from 45. This catches tier selectors that confuse
+  Shopware's calculated range upper bounds with tier start quantities.
 - `019f41cda01d71188864657fdda6b480`: CMS section containing a custom form
   option with a EUR 10.00 unit surcharge
 
