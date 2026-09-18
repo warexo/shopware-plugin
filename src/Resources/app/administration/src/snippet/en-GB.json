@@ -27,6 +27,15 @@
       }
     }
   },
+  "warexo": {
+    "promotion": {
+      "individualCodes": {
+        "restValue": "Remaining value",
+        "editRestValue": "Edit remaining value",
+        "saveError": "The remaining value could not be saved."
+      }
+    }
+  },
   "sw-product": {
     "warexoDecimalQuantity": {
       "stockLabel": "Warexo stock",

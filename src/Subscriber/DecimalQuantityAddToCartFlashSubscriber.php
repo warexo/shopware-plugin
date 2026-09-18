@@ -12,7 +12,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterface
 {
     private const ADD_ROUTE = 'frontend.checkout.line-item.add';
-
     public function __construct(
         private readonly TranslatorInterface $translator
     ) {
@@ -74,7 +73,7 @@ class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterfac
                     $message = $this->buildAddToCartSuccessMessage($decimalAddCount, $formattedCount);
                 }
 
-                $rewrittenMessages[] = $this->replaceScaledStockValues($message, DecimalQuantityRequestSubscriber::getDecimalPayloads($request), $formatter);
+                $rewrittenMessages[] = $message;
             }
 
             if ($rewrittenMessages !== $messages) {
@@ -98,33 +97,5 @@ class DecimalQuantityAddToCartFlashSubscriber implements EventSubscriberInterfac
         }
 
         return str_replace($translationCount, $formattedCount, $message);
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $decimalPayloads
-     */
-    private function replaceScaledStockValues(string $message, array $decimalPayloads, \NumberFormatter $formatter): string
-    {
-        foreach ($decimalPayloads as $payload) {
-            $coreMaxPurchase = $payload['_warexoCoreMaxPurchase'] ?? null;
-            $decimalMaxPurchase = $payload['warexoDecimalMaxPurchase'] ?? null;
-
-            if ((!is_int($coreMaxPurchase) && !is_float($coreMaxPurchase)) || (!is_int($decimalMaxPurchase) && !is_float($decimalMaxPurchase))) {
-                continue;
-            }
-
-            $formattedMaxPurchase = $formatter->format((float) $decimalMaxPurchase);
-            if ($formattedMaxPurchase === false) {
-                $formattedMaxPurchase = $this->formatTranslationCount((float) $decimalMaxPurchase);
-            }
-
-            $message = preg_replace(
-                '/(?<![\d,.])' . preg_quote((string) (int) $coreMaxPurchase, '/') . '(?![\d,.])/',
-                $formattedMaxPurchase,
-                $message
-            ) ?? $message;
-        }
-
-        return $message;
     }
 }

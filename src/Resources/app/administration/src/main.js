@@ -4,6 +4,7 @@ import './sw-product-detail-override'
 import './sw-product-category-form-override'
 import './sw-product-deliverability-form-override'
 import './module/sw-order-line-items-grid-override'
+import './module/sw-promotion-v2-individual-codes-behavior-override'
 
 import './sw-cms/blocks/commerce/product-options'
 import './sw-cms/blocks/commerce/gpsr-info'

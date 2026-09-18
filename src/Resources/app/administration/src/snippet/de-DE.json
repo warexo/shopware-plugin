@@ -27,6 +27,15 @@
       }
     }
   },
+  "warexo": {
+    "promotion": {
+      "individualCodes": {
+        "restValue": "Restwert",
+        "editRestValue": "Restwert bearbeiten",
+        "saveError": "Der Restwert konnte nicht gespeichert werden."
+      }
+    }
+  },
   "sw-product": {
     "warexoDecimalQuantity": {
       "stockLabel": "Warexo Lagerbestand",

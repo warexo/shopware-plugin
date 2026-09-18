@@ -166,7 +166,12 @@ class DecimalQuantityCartCollector implements CartDataCollectorInterface
         $price = $product->getCalculatedPrice();
         foreach ($prices as $tierPrice) {
             $price = $tierPrice;
-            if ($decimalQuantity <= $tierPrice->getQuantity()) {
+
+            // Shopware exposes the inclusive upper quantity of a bounded
+            // advanced-price range. Decimal quantities remain in that range
+            // until the next integer quantity starts (for example, an upper
+            // bound of 4 covers quantities through 4.999).
+            if ($decimalQuantity < $tierPrice->getQuantity() + 1) {
                 break;
             }
         }
