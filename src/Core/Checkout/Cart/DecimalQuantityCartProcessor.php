@@ -8,8 +8,10 @@ use Shopware\Core\Checkout\Cart\CartProcessorInterface;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
 use Shopware\Core\Checkout\Cart\LineItem\QuantityInformation;
+use Shopware\Core\Checkout\Cart\Price\CashRounding;
 use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\Struct\CalculatedPrice;
+use Shopware\Core\Checkout\Cart\Price\Struct\CartPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\ListPrice;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
 use Shopware\Core\Checkout\Cart\Price\Struct\ReferencePrice;
@@ -24,7 +26,8 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
 {
     public function __construct(
         private readonly QuantityPriceCalculator $calculator,
-        private readonly DecimalQuantityMapper $quantityMapper
+        private readonly DecimalQuantityMapper $quantityMapper,
+        private readonly CashRounding $rounding
     ) {
     }
 
@@ -56,7 +59,7 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
             $this->copyPriceDefinitionMetadata($lineItem->getPriceDefinition(), $definition, $lineItemData);
 
             $calculated = $this->calculator->calculate($definition, $context);
-            $lineItem->setPrice($this->normalizeCalculatedPrice($lineItemData, $calculated, $definition, $normalizedUnitPrice));
+            $lineItem->setPrice($this->normalizeCalculatedPrice($lineItemData, $calculated, $definition, $normalizedUnitPrice, $context));
             $lineItem->setPriceDefinition($definition);
         }
     }
@@ -196,7 +199,7 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
     /**
      * @param array<string, mixed> $lineItemData
      */
-    private function normalizeCalculatedPrice(array $lineItemData, CalculatedPrice $price, QuantityPriceDefinition $definition, float $normalizedUnitPrice): CalculatedPrice
+    private function normalizeCalculatedPrice(array $lineItemData, CalculatedPrice $price, QuantityPriceDefinition $definition, float $normalizedUnitPrice, SalesChannelContext $context): CalculatedPrice
     {
         $decimalQuantity = $this->getFloat($lineItemData['decimalQuantity'] ?? null);
         if ($decimalQuantity === null) {
@@ -205,6 +208,12 @@ class DecimalQuantityCartProcessor implements CartProcessorInterface
         }
 
         $normalizedTotalPrice = round($normalizedUnitPrice * $decimalQuantity, DecimalQuantityMapper::SCALE + 2);
+        // Cart totals must sum the rounded line totals shown to the customer.
+        // Round only after multiplying by the decimal quantity, never the scaled unit price.
+        $rounding = $context->getItemRounding();
+        $normalizedTotalPrice = $context->getTaxState() === CartPrice::TAX_STATE_GROSS || $rounding->roundForNet()
+            ? $this->rounding->cashRound($normalizedTotalPrice, $rounding)
+            : $this->rounding->mathRound($normalizedTotalPrice, $rounding);
         $taxFactor = $price->getTotalPrice() !== 0.0 ? $normalizedTotalPrice / $price->getTotalPrice() : 1.0;
 
         return new CalculatedPrice(

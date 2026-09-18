@@ -195,6 +195,7 @@
         <service id="Warexo\Core\Checkout\Cart\DecimalQuantityCartProcessor">
             <argument type="service" id="Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator"/>
             <argument type="service" id="Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper"/>
+            <argument type="service" id="Shopware\Core\Checkout\Cart\Price\CashRounding"/>
             <tag name="shopware.cart.processor" priority="4898"/>
         </service>
 
