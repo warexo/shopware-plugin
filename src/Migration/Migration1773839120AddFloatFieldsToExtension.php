@@ -17,9 +17,25 @@ class Migration1773839120AddFloatFieldsToExtension extends MigrationStep
 
     public function update(Connection $connection): void
     {
-        $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `stock` DECIMAL(10,3) UNSIGNED NULL');
-        $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `min_purchase` DECIMAL(10,3) UNSIGNED NULL');
-        $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `max_purchase` DECIMAL(10,3) UNSIGNED NULL');
-        $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `purchase_steps` DECIMAL(10,3) UNSIGNED NULL');
+        try {
+            $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `stock` DECIMAL(10,3) UNSIGNED NULL');
+        }catch(\Exception $e){
+            // ignore if column already exists
+        }
+        try{
+            $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `min_purchase` DECIMAL(10,3) UNSIGNED NULL');
+        }catch(\Exception $e){
+            // ignore if column already exists
+        }
+        try{
+            $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `max_purchase` DECIMAL(10,3) UNSIGNED NULL');
+        }catch(\Exception $e){
+            // ignore if column already exists
+        }
+        try{
+            $connection->executeStatement('ALTER TABLE `warexo_product_extension` ADD COLUMN `purchase_steps` DECIMAL(10,3) UNSIGNED NULL');
+        }catch(\Exception $e){
+            // ignore if column already exists
+        }
     }
 }
