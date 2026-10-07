@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
+
+    <card>
+        <title>Warexo API</title>
+        <title lang="de-DE">Warexo API</title>
+        <input-field type="text">
+            <name>apiUrl</name>
+            <label>API URL</label>
+            <label lang="de-DE">API-URL</label>
+            <placeholder>https://example.warexo.com/api/v1</placeholder>
+            <helpText>Full API base URL including /api/v1. Only needed for plugins that call Warexo.</helpText>
+            <helpText lang="de-DE">Vollständige API-Basis-URL einschließlich /api/v1. Nur für Plugins erforderlich, die Warexo aufrufen.</helpText>
+        </input-field>
+        <input-field type="text">
+            <name>apiUsername</name>
+            <label>Username</label>
+            <label lang="de-DE">Benutzername</label>
+        </input-field>
+        <input-field type="password">
+            <name>apiPassword</name>
+            <label>Password</label>
+            <label lang="de-DE">Passwort</label>
+        </input-field>
+        <input-field type="text">
+            <name>apiClientId</name>
+            <label>Client ID</label>
+            <label lang="de-DE">Mandanten-ID</label>
+            <helpText>Warexo client ID</helpText>
+            <helpText lang="de-DE">Warexo-Mandanten-ID.</helpText>
+        </input-field>
+    </card>
+</config>
