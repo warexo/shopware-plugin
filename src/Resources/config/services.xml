@@ -10,6 +10,8 @@
         <service id="Warexo\Service\WarexoApiClient">
             <argument type="service" id="http_client"/>
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="warexo.api_token.cache"/>
+            <tag name="kernel.event_subscriber"/>
         </service>
         <service id="Warexo\Service\CategoryTreeLoader">
             <argument type="service" id="category.repository"/>

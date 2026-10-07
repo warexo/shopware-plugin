@@ -6,6 +6,11 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Shopware\Core\System\SystemConfig\Event\SystemConfigChangedEvent;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Adapter\TagAwareAdapter;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -30,7 +35,7 @@ final class WarexoApiClientTest extends TestCase
             $requests[] = [$method, $url, $options];
             return new MockResponse(count($requests) === 1 ? '{"token":"test-token"}' : '[{"id":1}]');
         });
-        $client = new WarexoApiClient($http, $this->config());
+        $client = new WarexoApiClient($http, $this->config(), $this->cache());
 
         static::assertSame([['id' => 1]], $client->request('GET', '/entity/product', [
             'query' => ['limit' => 10, 'fields' => ['id', 'sku']],
@@ -72,7 +77,7 @@ final class WarexoApiClientTest extends TestCase
                 default => new MockResponse('{"id":42}'),
             };
         });
-        $client = new WarexoApiClient($http, $this->config());
+        $client = new WarexoApiClient($http, $this->config(), $this->cache());
 
         static::assertSame(['id' => 42], $client->request('POST', '_action/placeorder', ['json' => ['id' => 42]])->toArray());
         static::assertCount(4, $requests);
@@ -90,7 +95,7 @@ final class WarexoApiClientTest extends TestCase
             new MockResponse('{"token":"second"}'),
             new MockResponse('{}', ['http_code' => 401]),
         ], $requestCount);
-        $response = (new WarexoApiClient($http, $this->config()))->request('GET', 'entity/product');
+        $response = (new WarexoApiClient($http, $this->config(), $this->cache()))->request('GET', 'entity/product');
 
         static::assertSame(401, $response->getStatusCode());
         static::assertSame(4, $requestCount);
@@ -110,7 +115,7 @@ final class WarexoApiClientTest extends TestCase
             new MockResponse('{"token":"first"}'), new MockResponse('{}'),
             new MockResponse('{"token":"second"}'), new MockResponse('{}'),
         ], $requestCount);
-        $client = new WarexoApiClient($http, $config);
+        $client = new WarexoApiClient($http, $config, $this->cache());
         $client->request('GET', 'entity/product')->toArray();
         $values[$key] = $value;
         $client->request('GET', 'entity/product')->toArray();
@@ -135,7 +140,7 @@ final class WarexoApiClientTest extends TestCase
         });
         $http = $this->http([new MockResponse('{"token":"test-token"}'), new MockResponse('{}')], $requestCount);
 
-        (new WarexoApiClient($http, $config))->request('GET', 'entity/product', salesChannelId: 'sales-channel-id')->toArray();
+        (new WarexoApiClient($http, $config, $this->cache()))->request('GET', 'entity/product', salesChannelId: 'sales-channel-id')->toArray();
     }
 
     #[DataProvider('missingConfiguration')]
@@ -145,7 +150,7 @@ final class WarexoApiClientTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Configure the Warexo API');
         try {
-            (new WarexoApiClient($http, $this->config([$key => ''])))->request('GET', 'entity/product');
+            (new WarexoApiClient($http, $this->config([$key => '']), $this->cache()))->request('GET', 'entity/product');
         } finally {
             static::assertSame(0, $requestCount);
         }
@@ -164,7 +169,7 @@ final class WarexoApiClientTest extends TestCase
         $http = $this->http([], $requestCount);
         $this->expectException(\RuntimeException::class);
         try {
-            (new WarexoApiClient($http, $this->config(['apiUrl' => $url])))->request('GET', 'entity/product');
+            (new WarexoApiClient($http, $this->config(['apiUrl' => $url]), $this->cache()))->request('GET', 'entity/product');
         } finally {
             static::assertSame(0, $requestCount);
         }
@@ -186,7 +191,7 @@ final class WarexoApiClientTest extends TestCase
         $http = $this->http([], $requestCount);
         $this->expectException(\InvalidArgumentException::class);
         try {
-            (new WarexoApiClient($http, $this->config()))->request('GET', $path);
+            (new WarexoApiClient($http, $this->config(), $this->cache()))->request('GET', $path);
         } finally {
             static::assertSame(0, $requestCount);
         }
@@ -212,7 +217,7 @@ final class WarexoApiClientTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('did not return an access token');
         try {
-            (new WarexoApiClient($http, $this->config()))->request('GET', 'entity/product');
+            (new WarexoApiClient($http, $this->config(), $this->cache()))->request('GET', 'entity/product');
         } finally {
             static::assertSame(1, $requestCount);
         }
@@ -231,7 +236,7 @@ final class WarexoApiClientTest extends TestCase
         $http = $this->http([new MockResponse('{"error":"Bad credentials"}', ['http_code' => 401])], $requestCount);
         $this->expectException(ClientExceptionInterface::class);
         try {
-            (new WarexoApiClient($http, $this->config()))->request('GET', 'entity/product');
+            (new WarexoApiClient($http, $this->config(), $this->cache()))->request('GET', 'entity/product');
         } finally {
             static::assertSame(1, $requestCount);
         }
@@ -241,7 +246,7 @@ final class WarexoApiClientTest extends TestCase
     {
         $http = $this->http([new MockResponse('not json')], $requestCount);
         $this->expectException(DecodingExceptionInterface::class);
-        (new WarexoApiClient($http, $this->config()))->request('GET', 'entity/product');
+        (new WarexoApiClient($http, $this->config(), $this->cache()))->request('GET', 'entity/product');
     }
 
     public function testTransportFailureIsNotRetried(): void
@@ -252,7 +257,7 @@ final class WarexoApiClientTest extends TestCase
         ], $requestCount);
         $this->expectException(TransportException::class);
         try {
-            (new WarexoApiClient($http, $this->config()))->request('POST', 'entity/product', ['json' => ['sku' => 'TEST']]);
+            (new WarexoApiClient($http, $this->config(), $this->cache()))->request('POST', 'entity/product', ['json' => ['sku' => 'TEST']]);
         } finally {
             static::assertSame(2, $requestCount);
         }
@@ -265,7 +270,7 @@ final class WarexoApiClientTest extends TestCase
             new MockResponse('{"token":"test-token"}'),
             new MockResponse('', ['http_code' => $status]),
         ], $requestCount);
-        $response = (new WarexoApiClient($http, $this->config()))->request('DELETE', 'entity/product/1');
+        $response = (new WarexoApiClient($http, $this->config(), $this->cache()))->request('DELETE', 'entity/product/1');
 
         static::assertSame($status, $response->getStatusCode());
         static::assertSame(2, $requestCount);
@@ -281,6 +286,153 @@ final class WarexoApiClientTest extends TestCase
         yield [500];
     }
 
+    public function testTokenIsSharedAcrossIndependentPersistentCacheInstances(): void
+    {
+        $directory = sys_get_temp_dir() . '/warexo-cache-test-' . bin2hex(random_bytes(8));
+        $http = $this->http([
+            new MockResponse('{"token":"shared-token"}'), new MockResponse('{}'), new MockResponse('{}'),
+        ], $requestCount);
+        try {
+            $firstCache = new TagAwareAdapter(new FilesystemAdapter('warexo-test', 0, $directory));
+            (new WarexoApiClient($http, $this->config(), $firstCache))->request('GET', 'entity/product')->toArray();
+            $secondCache = new TagAwareAdapter(new FilesystemAdapter('warexo-test', 0, $directory));
+            (new WarexoApiClient($http, $this->config(), $secondCache))->request('GET', 'entity/product')->toArray();
+
+            static::assertSame(3, $requestCount, 'Two service/cache instances must share one login.');
+        } finally {
+            (new Filesystem())->remove($directory);
+        }
+    }
+
+    #[DataProvider('expiringTokens')]
+    public function testExpiredAndNearlyExpiredJwtTokensAreNotReused(int $offset): void
+    {
+        $payload = rtrim(strtr(base64_encode(json_encode(['exp' => time() + $offset], JSON_THROW_ON_ERROR)), '+/', '-_'), '=');
+        $token = 'header.' . $payload . '.signature';
+        $http = $this->http([
+            new MockResponse(json_encode(['token' => $token], JSON_THROW_ON_ERROR)), new MockResponse('{}'),
+            new MockResponse('{"token":"replacement"}'), new MockResponse('{}'),
+        ], $requestCount);
+        $client = new WarexoApiClient($http, $this->config(), $this->cache());
+
+        $client->request('GET', 'entity/product')->toArray();
+        $client->request('GET', 'entity/product')->toArray();
+
+        static::assertSame(4, $requestCount);
+    }
+
+    public static function expiringTokens(): iterable
+    {
+        yield 'expired' => [-60];
+        yield 'within safety margin' => [15];
+    }
+
+    #[DataProvider('connectionChanges')]
+    public function testApiSettingChangesInvalidateStoredToken(string $key, string $value): void
+    {
+        $http = $this->http([
+            new MockResponse('{"token":"first"}'), new MockResponse('{}'),
+            new MockResponse('{"token":"second"}'), new MockResponse('{}'),
+        ], $requestCount);
+        $cache = $this->cache();
+        $client = new WarexoApiClient($http, $this->config(), $cache);
+        $client->request('GET', 'entity/product')->toArray();
+        $client->onConfigChanged(new SystemConfigChangedEvent('AggroWarexoPlugin.config.' . $key, $value, null));
+        (new WarexoApiClient($http, $this->config(), $cache))->request('GET', 'entity/product')->toArray();
+
+        static::assertSame(4, $requestCount);
+    }
+
+    public function testUnrelatedSettingChangesKeepToken(): void
+    {
+        $http = $this->http([
+            new MockResponse('{"token":"cached"}'), new MockResponse('{}'), new MockResponse('{}'),
+        ], $requestCount);
+        $client = new WarexoApiClient($http, $this->config(), $this->cache());
+        $client->request('GET', 'entity/product')->toArray();
+        $client->onConfigChanged(new SystemConfigChangedEvent('AggroWarexoPlugin.config.decimalstock', true, null));
+        $client->onConfigChanged(new SystemConfigChangedEvent('OtherPlugin.config.apiPassword', 'other', null));
+        $client->request('GET', 'entity/product')->toArray();
+
+        static::assertSame(3, $requestCount);
+    }
+
+    public function testSalesChannelInvalidationKeepsOtherSalesChannelToken(): void
+    {
+        $http = $this->http([
+            new MockResponse('{"token":"channel-a"}'), new MockResponse('{}'),
+            new MockResponse('{"token":"channel-b"}'), new MockResponse('{}'), new MockResponse('{}'),
+            new MockResponse('{"token":"channel-a-replacement"}'), new MockResponse('{}'),
+        ], $requestCount);
+        $client = new WarexoApiClient($http, $this->config(), $this->cache());
+        $client->request('GET', 'entity/product', salesChannelId: 'a')->toArray();
+        $client->request('GET', 'entity/product', salesChannelId: 'b')->toArray();
+        $client->onConfigChanged(new SystemConfigChangedEvent('AggroWarexoPlugin.config.apiPassword', 'changed', 'a'));
+        $client->request('GET', 'entity/product', salesChannelId: 'b')->toArray();
+        $client->request('GET', 'entity/product', salesChannelId: 'a')->toArray();
+
+        static::assertSame(7, $requestCount);
+    }
+
+    public function testGlobalInvalidationAlsoExpiresSalesChannelTokens(): void
+    {
+        $http = $this->http([
+            new MockResponse('{"token":"channel-a"}'), new MockResponse('{}'),
+            new MockResponse('{"token":"channel-b"}'), new MockResponse('{}'),
+            new MockResponse('{"token":"replacement-a"}'), new MockResponse('{}'),
+            new MockResponse('{"token":"replacement-b"}'), new MockResponse('{}'),
+        ], $requestCount);
+        $client = new WarexoApiClient($http, $this->config(), $this->cache());
+        $client->request('GET', 'entity/product', salesChannelId: 'a')->toArray();
+        $client->request('GET', 'entity/product', salesChannelId: 'b')->toArray();
+        $client->invalidateToken();
+        $client->request('GET', 'entity/product', salesChannelId: 'a')->toArray();
+        $client->request('GET', 'entity/product', salesChannelId: 'b')->toArray();
+
+        static::assertSame(8, $requestCount);
+    }
+
+    public function testRejectedReplacementTokenIsRemovedFromCache(): void
+    {
+        $http = $this->http([
+            new MockResponse('{"token":"first"}'), new MockResponse('{}', ['http_code' => 401]),
+            new MockResponse('{"token":"rejected"}'), new MockResponse('{}', ['http_code' => 401]),
+            new MockResponse('{"token":"fresh"}'), new MockResponse('{}'),
+        ], $requestCount);
+        $cache = $this->cache();
+        $client = new WarexoApiClient($http, $this->config(), $cache);
+        $client->request('GET', 'entity/product')->getContent(false);
+        (new WarexoApiClient($http, $this->config(), $cache))->request('GET', 'entity/product')->toArray();
+
+        static::assertSame(6, $requestCount);
+    }
+
+    public function testTokenAlreadyRenewedByAnotherWorkerIsReused(): void
+    {
+        $cache = $this->cache();
+        $config = $this->config();
+        $otherHttp = $this->http([new MockResponse('{"token":"renewed-by-other-worker"}'), new MockResponse('{}')], $otherCount);
+        $count = 0;
+        $http = new MockHttpClient(static function (string $method, string $url, array $options) use ($cache, $config, $otherHttp, &$count): MockResponse {
+            ++$count;
+            if ($count === 1) {
+                return new MockResponse('{"token":"original"}');
+            }
+            if ($count === 2) {
+                $otherClient = new WarexoApiClient($otherHttp, $config, $cache);
+                $otherClient->invalidateToken();
+                $otherClient->request('GET', 'entity/product')->toArray();
+                return new MockResponse('{}', ['http_code' => 401]);
+            }
+            static::assertSame(['Authorization: Bearer renewed-by-other-worker'], $options['normalized_headers']['authorization']);
+            return new MockResponse('{}');
+        });
+
+        (new WarexoApiClient($http, $config, $cache))->request('GET', 'entity/product')->toArray();
+        static::assertSame(3, $count, 'The original worker must not perform an extra login.');
+        static::assertSame(2, $otherCount);
+    }
+
     /** @param list<MockResponse> $responses */
     private function http(array $responses, ?int &$requestCount): MockHttpClient
     {
@@ -292,6 +444,11 @@ final class WarexoApiClientTest extends TestCase
             static::assertNotEmpty($responses, 'Unexpected HTTP request.');
             return array_shift($responses);
         });
+    }
+
+    private function cache(): TagAwareAdapter
+    {
+        return new TagAwareAdapter(new ArrayAdapter());
     }
 
     private function config(array $overrides = []): SystemConfigService

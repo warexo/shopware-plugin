@@ -9,9 +9,15 @@ use Shopware\Core\Framework\Plugin;
 use Shopware\Core\Framework\Plugin\Context\UninstallContext;
 use Shopware\Core\System\CustomField\Aggregate\CustomFieldSet\CustomFieldSetEntity;
 use Shopware\Core\System\CustomField\CustomFieldTypes;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class AggroWarexoPlugin extends Plugin
 {
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+        $this->buildDefaultConfig($container);
+    }
 
     public function install(Plugin\Context\InstallContext $installContext): void
     {
