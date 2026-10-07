@@ -1,0 +1,7 @@
+framework:
+    cache:
+        pools:
+            warexo.api_token.cache:
+                adapter: cache.app
+                default_lifetime: 300
+                tags: true

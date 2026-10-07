@@ -1,0 +1,5 @@
+framework:
+    cache:
+        pools:
+            warexo.api_token.cache:
+                adapter: cache.adapter.filesystem
