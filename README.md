@@ -24,10 +24,22 @@ $products = $this->warexoApi->request('GET', 'entity/product', [
     'query' => ['limit' => 10, 'fields' => ['id', 'sku']],
 ], salesChannelId: $salesChannelId)->toArray();
 
+$created = $this->warexoApi->request('POST', 'entity/product', [
+    'json' => [
+        '__customPrimaryKey' => 'sku',
+        'sku' => 'MY-PLUGIN-UNIQUE-SKU',
+        'title' => 'Example product',
+        'price' => 1.23,
+        'active' => false,
+    ],
+])->toArray();
+
 $response = $this->warexoApi->request('PATCH', 'entity/product/123', [
     'json' => ['title' => 'Updated title'],
 ]);
 ```
+
+`__customPrimaryKey` names the field used to identify an existing entity, not the key's value. Repeating the creation request with the same SKU updates that product. Use a unique SKU for a new product. The tenant context is sent in the `X-Client-Id` header; `client` is not a product field.
 
 The client accepts relative endpoint paths and Symfony HttpClient request options, and returns a `ResponseInterface`. It logs in lazily and shares access tokens across requests and workers through the `warexo.api_token.cache` pool. The pool uses Shopware's configured application cache backend in production and a filesystem cache in development so tokens also persist across development requests. JWT tokens expire from the cache 30 seconds before their `exp` time; tokens without a usable expiry are cached for five minutes. Cache keys separate API URLs, credentials, client IDs and sales-channel scopes without exposing credentials.
 
