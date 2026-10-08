@@ -42,6 +42,20 @@ Open **Extensions > My extensions > Warexo Connector > Configure**. The setting 
 
 Leave this option disabled when the shop sells products only in whole units.
 
+### Stock updates after orders
+
+Keep Shopware's stock management enabled so that placing an order immediately reduces the stock, including while the order is waiting to be imported by Warexo:
+
+```yaml
+shopware:
+  stock:
+    enable_stock_management: true
+```
+
+The connector keeps the decimal stock in step with Shopware's stock changes and immediately invalidates affected product pages and listings. Shopware also handles quantity changes and cancellation through its stock management. With `enable_stock_management: false`, orders do not reduce stock locally.
+
+Warexo must send the current available stock as an absolute value through the Sync API. For example, stock 5 becomes 3 after an order for 2; a subsequent Warexo update with `stock: 3` leaves the stock at 3. Exported values must account for the relevant orders; an outdated stock snapshot can overwrite newer local deductions.
+
 The **Warexo API** card provides **API URL** (including `/api/v1`), **Username**, **Password** and **Client ID**. Enter the credentials of a Warexo user and the Warexo tenant's client ID. These settings can also be overridden per sales channel; omitted overrides inherit Shopware's global configuration.
 
 ## Using the Warexo API from another plugin

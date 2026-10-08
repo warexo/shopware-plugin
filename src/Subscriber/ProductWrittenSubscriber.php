@@ -8,6 +8,7 @@ use Warexo\Core\Content\Product\Quantity\DecimalQuantityFeatureDecider;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityMapper;
 use Warexo\Core\Content\Product\Quantity\DecimalQuantityValidator;
 use Warexo\Extension\Content\Product\ProductExtensionDefinition;
+use Shopware\Core\Content\Product\Events\InvalidateProductCache;
 use Shopware\Core\Content\Product\Events\ProductNoLongerAvailableEvent;
 use Shopware\Core\Content\Product\ProductEvents;
 use Shopware\Core\Framework\Context;
@@ -17,6 +18,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Shopware\Core\Framework\DataAbstractionLayer\Event\EntityWrittenEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityWriteResult;
 use Shopware\Core\Framework\Uuid\Uuid;
+use Shopware\Core\Defaults;
 
 class ProductWrittenSubscriber implements EventSubscriberInterface
 {
@@ -39,6 +41,10 @@ class ProductWrittenSubscriber implements EventSubscriberInterface
 
     public function productWritten(EntityWrittenEvent $event): void
     {
+        if ($event->getContext()->getVersionId() !== Defaults::LIVE_VERSION) {
+            return;
+        }
+
         if ($this->featureDecider->isEnabled()) {
             $ids = [];
 
@@ -77,15 +83,16 @@ class ProductWrittenSubscriber implements EventSubscriberInterface
         $this->connection->executeStatement(
             'UPDATE product SET available_stock = stock WHERE id IN (:ids)',
             ['ids' => Uuid::fromHexToBytesList($ids)],
-            ['ids' =>  ArrayParameterType::STRING]
+            ['ids' => ArrayParameterType::BINARY]
         );
 
         $this->updateAvailableFlag($ids, $event->getContext());
+        $this->dispatcher->dispatch(new InvalidateProductCache($ids, true));
     }
 
     public function productExtensionWritten(EntityWrittenEvent $event): void
     {
-        if (!$this->featureDecider->isEnabled()) {
+        if ($event->getContext()->getVersionId() !== Defaults::LIVE_VERSION || !$this->featureDecider->isEnabled()) {
             return;
         }
 
@@ -227,5 +234,6 @@ class ProductWrittenSubscriber implements EventSubscriberInterface
         }
 
         $this->updateAvailableFlag($productIds, $context);
+        $this->dispatcher->dispatch(new InvalidateProductCache($productIds, true));
     }
 }
