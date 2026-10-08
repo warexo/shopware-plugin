@@ -44,15 +44,15 @@ Leave this option disabled when the shop sells products only in whole units.
 
 ### Stock updates after orders
 
-Keep Shopware's stock management enabled so that placing an order immediately reduces the stock, including while the order is waiting to be imported by Warexo:
+Placing an order immediately reduces the stock, including while the order is waiting to be imported by Warexo. This also works with Shopware's stock management disabled:
 
 ```yaml
 shopware:
   stock:
-    enable_stock_management: true
+    enable_stock_management: false
 ```
 
-The connector keeps the decimal stock in step with Shopware's stock changes and immediately invalidates affected product pages and listings. Shopware also handles quantity changes and cancellation through its stock management. With `enable_stock_management: false`, orders do not reduce stock locally.
+When `enable_stock_management: false`, the connector uses Shopware's order stock lifecycle to handle deductions, quantity changes and cancellation. When the setting is `true`, Shopware handles these changes itself; the connector does not deduct stock again. The connector keeps the decimal stock in step with these stock changes and immediately invalidates affected product pages and listings in both modes.
 
 Warexo must send the current available stock as an absolute value through the Sync API. For example, stock 5 becomes 3 after an order for 2; a subsequent Warexo update with `stock: 3` leaves the stock at 3. Exported values must account for the relevant orders; an outdated stock snapshot can overwrite newer local deductions.
 

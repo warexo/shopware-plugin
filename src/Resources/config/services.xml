@@ -92,6 +92,14 @@
         </service>
 
         <!-- event listeners -->
+        <!-- Use Shopware's order stock lifecycle when core stock management is disabled. -->
+        <service id="warexo.order_stock_subscriber" class="Shopware\Core\Content\Product\Stock\OrderStockSubscriber">
+            <factory class="Warexo\Core\Content\Product\Stock\OrderStockSubscriberFactory" method="create"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="Shopware\Core\Content\Product\Stock\StockStorage"/>
+            <argument>%shopware.stock.enable_stock_management%</argument>
+            <tag name="kernel.event_subscriber"/>
+        </service>
         <service id="Warexo\Subscriber\ProductPageCriteriaSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
