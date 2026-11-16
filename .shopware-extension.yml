@@ -1,5 +1,0 @@
-build:
-  shopwareVersionConstraint: '6.7.4.0'
-  zip:
-    assets:
-      enabled: true
