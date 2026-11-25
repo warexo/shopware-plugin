@@ -19,6 +19,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\DependencyInjection\RegisterListenersPass;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 final class OrderStockSubscriberTest extends TestCase
@@ -75,19 +76,24 @@ final class OrderStockSubscriberTest extends TestCase
     }
 
     #[DataProvider('transitions')]
-    public function testCancellationAndReopeningChangeStockExactlyOnce(bool $enabled, string $from, string $to, int $before, int $after): void
+    public function testCancellationAndReopeningOnlyChangeStockWithCoreStockManagement(bool $enabled, string $from, string $to, int $before, int $after): void
     {
         $id = Uuid::fromHexToBytes(Uuid::randomHex());
         $productId = Uuid::randomHex();
         $context = Context::createDefaultContext();
         $connection = $this->createMock(Connection::class);
-        $connection->expects(static::once())->method('fetchAllAssociative')
-            ->willReturn([['id' => $id, 'product_id' => $productId, 'quantity' => '2']]);
         $storage = $this->createMock(AbstractStockStorage::class);
-        $storage->expects(static::once())->method('alter')->with(
-            [new StockAlteration($id, $productId, $before, $after)],
-            $context
-        );
+        if ($enabled) {
+            $connection->expects(static::once())->method('fetchAllAssociative')
+                ->willReturn([['id' => $id, 'product_id' => $productId, 'quantity' => '2']]);
+            $storage->expects(static::once())->method('alter')->with(
+                [new StockAlteration($id, $productId, $before, $after)],
+                $context
+            );
+        } else {
+            $connection->expects(static::never())->method('fetchAllAssociative');
+            $storage->expects(static::never())->method('alter');
+        }
         $fromState = new StateMachineStateEntity();
         $fromState->setTechnicalName($from);
         $toState = new StateMachineStateEntity();
@@ -124,23 +130,21 @@ final class OrderStockSubscriberTest extends TestCase
 
     private function dispatcher(bool $enabled, Connection $connection, AbstractStockStorage $storage): EventDispatcher
     {
+        $pluginServices = new ContainerBuilder();
+        $loader = new XmlFileLoader($pluginServices, new FileLocator(dirname(__DIR__, 6) . '/src/Resources/config'));
+        $loader->load('services.xml');
+
         $container = new ContainerBuilder();
         $container->setParameter('shopware.stock.enable_stock_management', $enabled);
-        $loader = new XmlFileLoader($container, new FileLocator(dirname(__DIR__, 6) . '/src/Resources/config'));
-        $loader->load('services.xml');
         $container->set(Connection::class, $connection);
         $container->set('Shopware\Core\Content\Product\Stock\StockStorage', $storage);
+        $container->setDefinition('warexo.order_stock_subscriber', $pluginServices->getDefinition('warexo.order_stock_subscriber'));
         $container->register(OrderStockSubscriber::class, OrderStockSubscriber::class)
             ->setArguments([new Reference(Connection::class), new Reference('Shopware\Core\Content\Product\Stock\StockStorage'), '%shopware.stock.enable_stock_management%'])
             ->addTag('kernel.event_subscriber');
+        $container->register('event_dispatcher', EventDispatcher::class);
+        (new RegisterListenersPass())->process($container);
 
-        $dispatcher = new EventDispatcher();
-        foreach ($container->findTaggedServiceIds('kernel.event_subscriber') as $id => $tags) {
-            if ($id === OrderStockSubscriber::class || $id === 'warexo.order_stock_subscriber') {
-                $dispatcher->addSubscriber($container->get($id));
-            }
-        }
-
-        return $dispatcher;
+        return $container->get('event_dispatcher');
     }
 }

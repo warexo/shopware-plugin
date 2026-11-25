@@ -52,7 +52,7 @@ shopware:
     enable_stock_management: false
 ```
 
-When `enable_stock_management: false`, the connector uses Shopware's order stock lifecycle to handle deductions, quantity changes and cancellation. When the setting is `true`, Shopware handles these changes itself; the connector does not deduct stock again. The connector keeps the decimal stock in step with these stock changes and immediately invalidates affected product pages and listings in both modes.
+When `enable_stock_management: false`, the connector adjusts stock when order line items are added, changed or removed. When an order is cancelled or reopened, Warexo supplies the corrected absolute stock through the Sync API. Until then, the status change leaves the local stock at its last value. When the setting is `true`, Shopware handles order stock changes, including cancellations and reopenings. The connector keeps the decimal stock in step with these stock changes and immediately invalidates affected product pages and listings in both modes.
 
 Warexo must send the current available stock as an absolute value through the Sync API. For example, stock 5 becomes 3 after an order for 2; a subsequent Warexo update with `stock: 3` leaves the stock at 3. Exported values must account for the relevant orders; an outdated stock snapshot can overwrite newer local deductions.
 
